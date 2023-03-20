@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Ingredient, Grain, Hop, Yeast, Stock
+from .models import Ingredient, Grain, Hop, Yeast, Stock, Recipe, GrainRecipe, HopRecipe
 from django.contrib import messages
 
 
@@ -79,3 +79,148 @@ def add_ingredients(request):
         messages.success(request, "Malformed request")
 
     return redirect("ingredients")
+
+
+def recipe(request):
+    context = {'recipes': Recipe.objects.all(),
+               'grain_recipes': GrainRecipe.objects.all(),
+               'hop_recipes': HopRecipe.objects.all(),
+               'yeasts': Yeast.objects.all()}
+    return render(request, 'recipe.html', context)
+
+
+def add_recipe(request):
+    if request.method != "POST":
+        return redirect("recipe")
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    name = request.POST['name']
+    new_entry = Recipe(name=name, owner=request.user.username)
+    new_entry.save()
+
+    return redirect("recipe")
+
+
+def edit_recipe(request, pk):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    current_recipe = Recipe.objects.get(pk=pk)
+    if current_recipe.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's recipe")
+        return redirect("recipe")
+
+    if request.method == "POST":
+        current_recipe.name = request.POST['name']
+        current_recipe.batch_size_l = request.POST['batch_size_l']
+        current_recipe.yeast = Yeast.objects.get(pk=request.POST['yeast'])
+        current_recipe.comments = request.POST['comments']
+        current_recipe.save()
+        return redirect("edit_recipe", pk)
+
+    else:
+        used_grains = GrainRecipe.objects.filter(recipe=current_recipe).values_list("grain")
+
+        context = {'recipe': current_recipe,
+                   'grain_recipes': GrainRecipe.objects.filter(recipe=pk),
+                   'hop_recipes': HopRecipe.objects.filter(recipe=pk),
+                   'all_grain': Grain.objects.all(),
+                   'all_hop': Hop.objects.all(),
+                   'unused_grain': Grain.objects.all().exclude(pk__in=used_grains),
+                   'all_yeast': Yeast.objects.all()}
+        return render(request, 'edit_recipe.html', context)
+
+
+def add_grain(request, pk):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    current_recipe = Recipe.objects.get(pk=pk)
+    if current_recipe.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's recipe")
+        return redirect("recipe")
+
+    if request.method != "POST":
+        return redirect("recipe")
+
+    grain = request.POST['grain']
+    quantity_g = request.POST['quantity_g']
+
+    new_entry = GrainRecipe(recipe=current_recipe, grain=Grain.objects.get(pk=grain), quantity_g=quantity_g)
+    new_entry.save()
+
+    return redirect("edit_recipe", pk)
+
+
+def add_hop(request, pk):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    current_recipe = Recipe.objects.get(pk=pk)
+    if current_recipe.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's recipe")
+        return redirect("recipe")
+
+    if request.method != "POST":
+        return redirect("recipe")
+
+    hop = request.POST['hop']
+    quantity_g = request.POST['quantity_g']
+    time_min = request.POST['time_min']
+
+    if request.POST.get('dry_hop', False):
+        dry_hop = True
+        time_min = 0
+    else:
+        dry_hop = False
+
+    new_entry = HopRecipe(recipe=current_recipe, hop=Hop.objects.get(pk=hop), quantity_g=quantity_g, time_min=time_min, dry_hop=dry_hop)
+    new_entry.save()
+
+    return redirect("edit_recipe", pk)
+
+
+def edit_grain(request, pk):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    current_recipe = GrainRecipe.objects.get(pk=pk)
+    if current_recipe.recipe.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's recipe")
+        return redirect("recipe")
+
+    if request.method != "POST":
+        return redirect("recipe")
+
+    current_recipe.grain = Grain.objects.get(pk=request.POST['grain'])
+    current_recipe.quantity_g = request.POST['quantity_g']
+    current_recipe.save()
+    return redirect("edit_recipe", pk=current_recipe.recipe.pk)
+
+
+def edit_hop(request, pk):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    current_recipe = HopRecipe.objects.get(pk=pk)
+    if current_recipe.recipe.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's recipe")
+        return redirect("recipe")
+
+    if request.method != "POST":
+        return redirect("recipe")
+
+    current_recipe.hop = Hop.objects.get(pk=request.POST['hop'])
+    current_recipe.quantity_g = request.POST['quantity_g']
+    current_recipe.time_min = request.POST['time_min']
+
+    if request.POST.get('dry_hop', False):
+        current_recipe.dry_hop = True
+        current_recipe.time_min = 0
+    else:
+        current_recipe.dry_hop = False
+
+    current_recipe.save()
+
+    return redirect("edit_recipe", pk=current_recipe.recipe.pk)

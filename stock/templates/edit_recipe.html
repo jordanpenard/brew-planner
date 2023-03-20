@@ -1,0 +1,207 @@
+{% extends 'master.html' %}
+{% block title %} Edit {{ recipe.name }}{% endblock title %}
+{% block content %}
+
+<script>
+  function grain_recipe_edit(pk) {
+     document.getElementById("grain_edit_"+pk).removeAttribute("hidden");
+     document.getElementById("grain_recipe_"+pk).setAttribute("hidden", "hidden");
+  }
+  function hop_recipe_edit(pk) {
+     document.getElementById("hop_edit_"+pk).removeAttribute("hidden");
+     document.getElementById("hop_recipe_"+pk).setAttribute("hidden", "hidden");
+  }
+</script>
+
+<h1>Edit {{ recipe.name }}</h1>
+{% if user.is_authenticated %}
+    <form method="post" action="/recipe/{{recipe.pk}}/edit">
+        {% csrf_token %}
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" name="name" id="name" placeholder="Recipe name" value="{{ recipe.name }}">
+            <label for="name">Recipe name</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" name="batch_size_l" id="batch_size_l" placeholder="Batch size (L)" value="{{ recipe.batch_size_l }}">
+            <label for="batch_size_l">Batch size (L)</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <select id="yeast" name="yeast" class="form-select">
+              {% for yeast in all_yeast %}
+                <option value="{{ yeast.pk }}"
+                        {% if yeast == recipe.yeast %} selected {% endif %}
+                >{{ yeast }}</option>
+              {% endfor %}
+            </select>
+            <label for="yeast">Yeast</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <textarea class="form-control" placeholder="Comments" id="comments" name="comments" style="height: 100px">{{ recipe.comments }}</textarea>
+            <label for="comments">Comments</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+
+    <br>
+
+    <table class="table" id="grain_recipe">
+        <tbody>
+            {% for grain_recipe in grain_recipes %}
+                <tr id="grain_recipe_{{grain_recipe.pk}}">
+                    <td>{{ grain_recipe.grain }}</td>
+                    <td>{{ grain_recipe.quantity_g }}g</td>
+                    <td><button type="button" onclick="grain_recipe_edit({{grain_recipe.pk}})" class="btn btn-primary">Edit</button></td>
+                </tr>
+
+                <tr hidden="hidden" id="grain_edit_{{grain_recipe.pk}}">
+                    <form method="post" action="/recipe/edit_grain/{{grain_recipe.pk}}">
+                        {% csrf_token %}
+                        <td>
+                            <div class="form-floating mb-3">
+                                <select name="grain" class="form-select" id="grain_{{grain_recipe.pk}}">
+                                    {% for grain in all_grain %}
+                                        <option value="{{ grain.pk }}"
+                                            {% if grain.pk == grain_recipe.grain.pk %} selected {% endif %}
+                                        >{{ grain }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="grain_{{grain_recipe.pk}}">Grain</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="grain_quantity_g_{{grain_recipe.pk}}" name="quantity_g" value="{{ grain_recipe.quantity_g }}" placeholder="Quantity (g)">
+                                <label for="grain_quantity_g_{{grain_recipe.pk}}">Quantity (g)</label>
+                            </div>
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </td>
+                    </form>
+                </tr>
+            {% endfor %}
+            <form method="post" action="/recipe/{{recipe.pk}}/add_grain">
+                {% csrf_token %}
+                <tr>
+                    <td>
+                        <div class="form-floating mb-3">
+                            <select id="grain" name="grain" class="form-select">
+                                {% for grain in unused_grain %}
+                                    <option value="{{ grain.pk }}">{{ grain }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="grain">Grain</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="quantity_g" id="grain_quantity_g" placeholder="Quantity (g)">
+                            <label for="grain_quantity_g">Quantity (g)</label>
+                        </div>
+                    </td>
+                    <td><button type="submit" class="btn btn-primary">Add</button></td>
+                </tr>
+            </form>
+        </tbody>
+    </table>
+
+    <table class="table" id="hop_recipe">
+        <tbody>
+            {% for hop_recipe in hop_recipes %}
+                <tr id="hop_recipe_{{hop_recipe.pk}}">
+                    <td>{{ hop_recipe.hop }}</td>
+                    <td>{{ hop_recipe.quantity_g }}g</td>
+                    <td>
+                        {% if hop_recipe.dry_hop %}
+                            Dry hop
+                        {% else %}
+                            {{ hop_recipe.time_min }} min
+                        {% endif %}
+                    </td>
+                    <td><button type="button" onclick="hop_recipe_edit({{hop_recipe.pk}})" class="btn btn-primary">Edit</button></td>
+                </tr>
+                <tr id="hop_edit_{{hop_recipe.pk}}" hidden="hidden">
+                    <form method="post" action="/recipe/edit_hop/{{hop_recipe.pk}}">
+                        {% csrf_token %}
+                        <td>
+                            <div class="form-floating mb-3">
+                                <select name="hop" class="form-select" id="hop_{{hop_recipe.pk}}">
+                                    {% for hop in all_hop %}
+                                        <option value="{{ hop.pk }}"
+                                            {% if hop.pk == hop_recipe.hop.pk %} selected {% endif %}
+                                        >{{ hop }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="hop_{{hop_recipe.pk}}">Hop</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="hop_quantity_g_{{hop_recipe.pk}}" name="quantity_g" value="{{ hop_recipe.quantity_g }}" placeholder="Quantity (g)">
+                                <label for="hop_quantity_g_{{hop_recipe.pk}}">Quantity (g)</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="row g-2">
+                                <div class="col-md"><div class="form-floating">
+                                    <input type="text" class="form-control" name="time_min" id="time_min_{{hop_recipe.pk}}" value="{{hop_recipe.time_min}}" placeholder="Time (min)">
+                                    <label for="time_min_{{hop_recipe.pk}}">Time (min)</label>
+                                </div></div>
+                                <div class="col-md"><div class="form-check form-check-inline" style="margin-top: 14px;">
+                                    <input class="form-check-input" type="checkbox" id="dry_hop_{{hop_recipe.pk}}" name="dry_hop"
+                                           {% if hop_recipe.dry_hop %}checked{% endif %}
+                                    >
+                                    <label class="form-check-label" for="dry_hop_{{hop_recipe.pk}}">Dry hop</label>
+                                </div></div>
+                            </div>
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </td>
+                    </form>
+                </tr>
+            {% endfor %}
+            <form method="post" action="/recipe/{{recipe.pk}}/add_hop">
+                {% csrf_token %}
+                <tr>
+                    <td>
+                        <div class="form-floating mb-3">
+                            <select id="hop" name="hop" class="form-select">
+                                {% for hop in all_hop %}
+                                    <option value="{{ hop.pk }}">{{ hop }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="hop">Hop</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="quantity_g" id="hop_quantity_g" placeholder="Quantity (g)">
+                            <label for="hop_quantity_g">Quantity (g)</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="row g-2">
+                            <div class="col-md"><div class="form-floating">
+                                <input type="text" class="form-control" name="time_min" id="time_min" placeholder="Time (min)">
+                                <label for="time_min">Time (min)</label>
+                            </div></div>
+                            <div class="col-md"><div class="form-check form-check-inline" style="margin-top: 14px;">
+                                <input class="form-check-input" type="checkbox" id="dry_hop" name="dry_hop">
+                                <label class="form-check-label" for="dry_hop">Dry hop</label>
+                            </div></div>
+                        </div>
+                    </td>
+                    <td><button type="submit" class="btn btn-primary">Add</button></td>
+                </tr>
+            </form>
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-danger" role="alert">You need to be logged in</div>
+{% endif %}
+{% endblock content %}

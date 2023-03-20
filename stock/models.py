@@ -35,8 +35,30 @@ class Yeast(Ingredient):
 
 class Stock(models.Model):
     owner = models.CharField(max_length=200)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.DO_NOTHING)
     quantity_g = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.ingredient)+" - "+str(self.quantity_g)+"g"
+
+
+class Recipe(models.Model):
+    owner = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+    batch_size_l = models.FloatField(default=0)
+    comments = models.CharField(max_length=1000)
+    yeast = models.ForeignKey(Ingredient, on_delete=models.DO_NOTHING, null=True)
+
+
+class GrainRecipe(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    grain = models.ForeignKey(Grain, on_delete=models.DO_NOTHING)
+    quantity_g = models.IntegerField(default=0)
+
+
+class HopRecipe(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    hop = models.ForeignKey(Hop, on_delete=models.DO_NOTHING)
+    quantity_g = models.IntegerField(default=0)
+    time_min = models.IntegerField(default=0)
+    dry_hop = models.BooleanField(default=False)
