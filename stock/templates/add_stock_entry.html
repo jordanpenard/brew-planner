@@ -1,0 +1,12 @@
+<form method="post" action="/stock/add">
+  {% csrf_token %}
+  <tr>
+    <td><select id="ingredient" name="ingredient" class="form-select">
+      {% for entry in ingredients %}
+        <option value="{{ entry.pk }}">{{ entry }}</option>
+      {% endfor %}
+    </select></td>
+    <td><input type="text" class="form-control" id="quantity_g" name="quantity_g"></td>
+    <td><button type="submit" class="btn btn-primary">Add</button></td>
+  </tr>
+</form>

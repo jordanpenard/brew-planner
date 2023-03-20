@@ -1,0 +1,20 @@
+{% extends 'master.html' %}
+{% block title %}Stock{% endblock title %}
+{% block content %}
+<h1>Stock</h1>
+{% if user.is_authenticated %}
+    <table class="table">
+        <thead><tr><th scope="col">Ingredient</th><th scope="col">Quantity (grams)</th><th scope="col"></th></tr></thead>
+        <tbody>
+            {% for entry in stock %}
+                {% if entry.owner == user.username %}
+                    <tr><td>{{entry.ingredient}}</td><td>{{entry.quantity_g}}</td><td></td></tr>
+                {% endif %}
+            {% endfor %}
+            {% include "add_stock_entry.html" %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-danger" role="alert">You need to be logged in</div>
+{% endif %}
+{% endblock content %}

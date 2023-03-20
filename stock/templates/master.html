@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}{% endblock title %}</title>
+  {% load bootstrap5 %}
+  {% bootstrap_css %}
+  {% bootstrap_javascript %}
+  <script src="https://kit.fontawesome.com/e0ab70fa91.js"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Brew Planner</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/ingredients">Ingredients</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/stock">Stock</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav navbar-right">
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true"><i class="fas fa-user" aria-hidden="true"></i> {{ user.username }}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/user/logout">Logout</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="/user/login">Login</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main role="main" class="container">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  {% block content %}
+  {% endblock content %}
+</main>
+
+<!--
+<footer class="footer">
+    <span class="text-muted" style="padding: 0px 1rem;">
+        See <a target="_blank" href="https://github.com/jordanpenard/brew-monitor">jordanpenard/brew-monitor</a> for licencing.
+    </span>
+</footer>
+-->
+</body>
+</html>
