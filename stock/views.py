@@ -10,7 +10,8 @@ def index(request):
 def stock(request):
     # Filtering the list of ingredients so the list to add a new entry in the stock only shows ingredients that aren't yet in the stock
     used_ingredients = Stock.objects.filter(owner=request.user.username).values_list("ingredient")
-    context = {'stock': Stock.objects.all(), 'ingredients': Ingredient.objects.all().exclude(pk__in=used_ingredients)}
+    context = {'stock': Stock.objects.all(),
+               'unused_ingredients': Ingredient.objects.all().exclude(pk__in=used_ingredients)}
     return render(request, 'stock.html', context)
 
 
@@ -25,6 +26,19 @@ def add_stock(request):
 
     new_entry = Stock(ingredient=Ingredient.objects.get(pk=ingredient), quantity_g=quantity_g, owner=request.user.username)
     new_entry.save()
+    return redirect("stock")
+
+
+def edit_stock(request):
+    if request.method != "POST":
+        return redirect("stock")
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    pk = request.POST['pk']
+    quantity_g = request.POST['quantity_g']
+
+    Stock.objects.filter(pk=pk, owner=request.user.username).update(quantity_g=quantity_g)
     return redirect("stock")
 
 

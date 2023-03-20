@@ -2,8 +2,8 @@
   {% csrf_token %}
   <tr>
     <td><select id="ingredient" name="ingredient" class="form-select">
-      {% for entry in ingredients %}
-        <option value="{{ entry.pk }}">{{ entry }}</option>
+      {% for ingredient in unused_ingredients %}
+        <option value="{{ ingredient.pk }}">{{ ingredient }}</option>
       {% endfor %}
     </select></td>
     <td><input type="text" class="form-control" id="quantity_g" name="quantity_g"></td>
