@@ -30,6 +30,11 @@
         </div>
 
         <div class="form-floating mb-3">
+            <input type="text" class="form-control" name="mash_temperature_c" id="mash_temperature_c" placeholder="Mash temperature (°C)" value="{{ recipe.mash_temperature_c }}" {{disabled_state}}>
+            <label for="mash_temperature_c">Mash temperature (°C)</label>
+        </div>
+
+        <div class="form-floating mb-3">
             <select id="yeast" name="yeast" class="form-select" {{disabled_state}}>
               {% for yeast in all_yeast %}
                 <option value="{{ yeast.pk }}"

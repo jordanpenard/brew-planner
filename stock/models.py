@@ -48,6 +48,7 @@ class Recipe(models.Model):
     batch_size_l = models.FloatField(default=0)
     comments = models.CharField(max_length=1000, blank=True)
     yeast = models.ForeignKey(Ingredient, on_delete=models.DO_NOTHING, null=True)
+    mash_temperature_c = models.FloatField(default=0)
 
     def lovibondToRgb(self, lovibond):
 
@@ -127,7 +128,23 @@ class Recipe(models.Model):
 
                 ibu += hop_ibu
 
+        # For the FG, taking 2 reference points as follow and doing a linear extrapolation
+        # Ref : https://brulosophy.com/2015/10/12/the-mash-high-vs-low-temperature-exbeeriment-results/
+
+        if self.mash_temperature_c < 64:
+            fg = 1.005
+
+        elif self.mash_temperature_c > 72:
+            fg = 1.014
+
+        else:
+            fg = 1.005 + (self.mash_temperature_c-64)*(1.014-1.005)/(72 - 64)
+
+        abv = (og - fg) * 131.25
+
         ret = {'og': '{:.3f}'.format(og),
+               'fg': '{:.3f}'.format(fg),
+               'abv': '{:.1f}'.format(abv),
                'diastatic_power': '{:.0f}'.format(diastatic_power),
                'color_l': '{:.1f}'.format(color_l),
                'color_rgb': self.lovibondToRgb(color_l),
@@ -147,3 +164,18 @@ class HopRecipe(models.Model):
     quantity_g = models.IntegerField(default=0)
     time_min = models.IntegerField(default=0)
     dry_hop = models.BooleanField(default=False)
+
+
+class Brew(models.Model):
+    name = models.CharField(max_length=200)
+    recipe = models.ForeignKey(Recipe, on_delete=models.DO_NOTHING)
+
+    brew_date = models.DateTimeField()
+    bottling_date = models.DateTimeField()
+
+    measured_og = models.FloatField(default=1)
+    measured_fg = models.FloatField(default=1)
+    measured_mash_ph = models.FloatField(default=0)
+
+    def __str__(self):
+        return self.name

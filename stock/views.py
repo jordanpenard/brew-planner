@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Ingredient, Grain, Hop, Yeast, Stock, Recipe, GrainRecipe, HopRecipe
+from .models import Ingredient, Grain, Hop, Yeast, Stock, Recipe, GrainRecipe, HopRecipe, Brew
 from django.contrib import messages
 
 
@@ -115,6 +115,7 @@ def edit_recipe(request, pk):
             return redirect("edit_recipe", pk)
 
         current_recipe.name = request.POST['name']
+        current_recipe.mash_temperature_c = request.POST['mash_temperature_c']
         current_recipe.batch_size_l = request.POST['batch_size_l']
         current_recipe.yeast = Yeast.objects.get(pk=request.POST['yeast'])
         current_recipe.comments = request.POST['comments']
@@ -233,3 +234,10 @@ def edit_hop(request, pk):
     current_recipe.save()
 
     return redirect("edit_recipe", pk=current_recipe.recipe.pk)
+
+
+def brew(request):
+
+    context = {'brews': Brew.objects.all()}
+
+    return render(request, 'brew.html', context)

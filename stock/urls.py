@@ -15,4 +15,5 @@ urlpatterns = [
     path('stock/edit', views.edit_stock, name="edit_stock"),
     path('ingredients', views.ingredients, name="ingredients"),
     path('ingredients/add', views.add_ingredients, name="add_ingredients"),
+    path('brew', views.brew, name="brew"),
 ]

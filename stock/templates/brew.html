@@ -1,0 +1,21 @@
+{% extends 'master.html' %}
+{% block title %}Brew{% endblock title %}
+{% block content %}
+
+<h1>Brew</h1>
+{% if user.is_authenticated %}
+    <table class="table">
+        <thead><tr><th scope="col">Brew</th><th scope="col">Owner</th></tr></thead>
+        <tbody>
+            {% for brew in brews %}
+                <tr>
+                    <td><a href="/brew/{{brew.pk}}">{{ brew.name }}</a> {% include 'brew_stats.html' %}</td>
+                    <td>{{ brew.owner }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-danger" role="alert">You need to be logged in</div>
+{% endif %}
+{% endblock content %}
