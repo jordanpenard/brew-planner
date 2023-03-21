@@ -14,24 +14,23 @@
       }
     </script>
 
-    <br>
     <h3>{% include 'recipe_stats.html' %}</h3>
     <br>
 
     <form method="post" action="/recipe/{{recipe.pk}}">
         {% csrf_token %}
         <div class="form-floating mb-3">
-            <input type="text" class="form-control" name="name" id="name" placeholder="Recipe name" value="{{ recipe.name }}">
+            <input type="text" class="form-control" name="name" id="name" placeholder="Recipe name" value="{{ recipe.name }}" {{disabled_state}}>
             <label for="name">Recipe name</label>
         </div>
 
         <div class="form-floating mb-3">
-            <input type="text" class="form-control" name="batch_size_l" id="batch_size_l" placeholder="Batch size (L)" value="{{ recipe.batch_size_l }}">
+            <input type="text" class="form-control" name="batch_size_l" id="batch_size_l" placeholder="Batch size (L)" value="{{ recipe.batch_size_l }}" {{disabled_state}}>
             <label for="batch_size_l">Batch size (L)</label>
         </div>
 
         <div class="form-floating mb-3">
-            <select id="yeast" name="yeast" class="form-select">
+            <select id="yeast" name="yeast" class="form-select" {{disabled_state}}>
               {% for yeast in all_yeast %}
                 <option value="{{ yeast.pk }}"
                         {% if yeast == recipe.yeast %} selected {% endif %}
@@ -42,22 +41,28 @@
         </div>
 
         <div class="form-floating mb-3">
-            <textarea class="form-control" placeholder="Comments" id="comments" name="comments" style="height: 100px">{{ recipe.comments }}</textarea>
+            <textarea class="form-control" placeholder="Comments" id="comments" name="comments" style="height: 100px" {{disabled_state}}>{{ recipe.comments }}</textarea>
             <label for="comments">Comments</label>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
+        {% if disabled_state != "disabled" %}
+            <button type="submit" class="btn btn-primary">Save</button>
+        {% endif %}
     </form>
 
     <br>
-
+    <h2>Grain bill</h2>
     <table class="table" id="grain_recipe">
         <tbody>
             {% for grain_recipe in grain_recipes %}
                 <tr id="grain_recipe_{{grain_recipe.pk}}">
                     <td>{{ grain_recipe.grain }}</td>
                     <td>{{ grain_recipe.quantity_g }}g</td>
-                    <td><button type="button" onclick="grain_recipe_edit({{grain_recipe.pk}})" class="btn btn-primary">Edit</button></td>
+                    <td>
+                        {% if disabled_state != "disabled" %}
+                            <button type="button" onclick="grain_recipe_edit({{grain_recipe.pk}})" class="btn btn-primary">Edit</button>
+                        {% endif %}
+                    </td>
                 </tr>
 
                 <tr hidden="hidden" id="grain_edit_{{grain_recipe.pk}}">
@@ -87,31 +92,35 @@
                     </form>
                 </tr>
             {% endfor %}
-            <form method="post" action="/recipe/{{recipe.pk}}/add_grain">
-                {% csrf_token %}
-                <tr>
-                    <td>
-                        <div class="form-floating mb-3">
-                            <select id="grain" name="grain" class="form-select">
-                                {% for grain in unused_grain %}
-                                    <option value="{{ grain.pk }}">{{ grain }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="grain">Grain</label>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" name="quantity_g" id="grain_quantity_g" placeholder="Quantity (g)">
-                            <label for="grain_quantity_g">Quantity (g)</label>
-                        </div>
-                    </td>
-                    <td><button type="submit" class="btn btn-primary">Add</button></td>
-                </tr>
-            </form>
+            {% if disabled_state != "disabled" %}
+                <form method="post" action="/recipe/{{recipe.pk}}/add_grain">
+                    {% csrf_token %}
+                    <tr>
+                        <td>
+                            <div class="form-floating mb-3">
+                                <select id="grain" name="grain" class="form-select">
+                                    {% for grain in unused_grain %}
+                                        <option value="{{ grain.pk }}">{{ grain }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="grain">Grain</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" name="quantity_g" id="grain_quantity_g" placeholder="Quantity (g)">
+                                <label for="grain_quantity_g">Quantity (g)</label>
+                            </div>
+                        </td>
+                        <td><button type="submit" class="btn btn-primary">Add</button></td>
+                    </tr>
+                </form>
+            {% endif %}
         </tbody>
     </table>
 
+    <br>
+    <h2>Hop bill</h2>
     <table class="table" id="hop_recipe">
         <tbody>
             {% for hop_recipe in hop_recipes %}
@@ -125,7 +134,11 @@
                             {{ hop_recipe.time_min }} min
                         {% endif %}
                     </td>
-                    <td><button type="button" onclick="hop_recipe_edit({{hop_recipe.pk}})" class="btn btn-primary">Edit</button></td>
+                    <td>
+                        {% if disabled_state != "disabled" %}
+                            <button type="button" onclick="hop_recipe_edit({{hop_recipe.pk}})" class="btn btn-primary">Edit</button>
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr id="hop_edit_{{hop_recipe.pk}}" hidden="hidden">
                     <form method="post" action="/recipe/edit_hop/{{hop_recipe.pk}}">
@@ -168,40 +181,42 @@
                     </form>
                 </tr>
             {% endfor %}
-            <form method="post" action="/recipe/{{recipe.pk}}/add_hop">
-                {% csrf_token %}
-                <tr>
-                    <td>
-                        <div class="form-floating mb-3">
-                            <select id="hop" name="hop" class="form-select">
-                                {% for hop in all_hop %}
-                                    <option value="{{ hop.pk }}">{{ hop }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="hop">Hop</label>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" name="quantity_g" id="hop_quantity_g" placeholder="Quantity (g)">
-                            <label for="hop_quantity_g">Quantity (g)</label>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="row g-2">
-                            <div class="col-md"><div class="form-floating">
-                                <input type="text" class="form-control" name="time_min" id="time_min" placeholder="Time (min)">
-                                <label for="time_min">Time (min)</label>
-                            </div></div>
-                            <div class="col-md"><div class="form-check form-check-inline" style="margin-top: 14px;">
-                                <input class="form-check-input" type="checkbox" id="dry_hop" name="dry_hop">
-                                <label class="form-check-label" for="dry_hop">Dry hop</label>
-                            </div></div>
-                        </div>
-                    </td>
-                    <td><button type="submit" class="btn btn-primary">Add</button></td>
-                </tr>
-            </form>
+            {% if disabled_state != "disabled" %}
+                <form method="post" action="/recipe/{{recipe.pk}}/add_hop">
+                    {% csrf_token %}
+                    <tr>
+                        <td>
+                            <div class="form-floating mb-3">
+                                <select id="hop" name="hop" class="form-select">
+                                    {% for hop in all_hop %}
+                                        <option value="{{ hop.pk }}">{{ hop }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="hop">Hop</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" name="quantity_g" id="hop_quantity_g" placeholder="Quantity (g)">
+                                <label for="hop_quantity_g">Quantity (g)</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="row g-2">
+                                <div class="col-md"><div class="form-floating">
+                                    <input type="text" class="form-control" name="time_min" id="time_min" placeholder="Time (min)">
+                                    <label for="time_min">Time (min)</label>
+                                </div></div>
+                                <div class="col-md"><div class="form-check form-check-inline" style="margin-top: 14px;">
+                                    <input class="form-check-input" type="checkbox" id="dry_hop" name="dry_hop">
+                                    <label class="form-check-label" for="dry_hop">Dry hop</label>
+                                </div></div>
+                            </div>
+                        </td>
+                        <td><button type="submit" class="btn btn-primary">Add</button></td>
+                    </tr>
+                </form>
+            {% endif %}
         </tbody>
     </table>
 {% else %}

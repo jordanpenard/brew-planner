@@ -95,11 +95,12 @@ def add_recipe(request):
     if not request.user.is_authenticated:
         return redirect("login")
 
-    name = request.POST['name']
-    new_entry = Recipe(name=name, owner=request.user.username)
+    new_entry = Recipe(owner=request.user.username)
+    new_entry.save()
+    new_entry.name = "Recipe "+str(new_entry.pk)
     new_entry.save()
 
-    return redirect("recipe")
+    return redirect("edit_recipe", pk=new_entry.pk)
 
 
 def edit_recipe(request, pk):
@@ -107,11 +108,12 @@ def edit_recipe(request, pk):
         return redirect("login")
 
     current_recipe = Recipe.objects.get(pk=pk)
-    if current_recipe.owner != request.user.username:
-        messages.success(request, "You can't edit someone else's recipe")
-        return redirect("recipe")
 
     if request.method == "POST":
+        if current_recipe.owner != request.user.username:
+            messages.success(request, "You can't edit someone else's recipe")
+            return redirect("edit_recipe", pk)
+
         current_recipe.name = request.POST['name']
         current_recipe.batch_size_l = request.POST['batch_size_l']
         current_recipe.yeast = Yeast.objects.get(pk=request.POST['yeast'])
@@ -120,9 +122,16 @@ def edit_recipe(request, pk):
         return redirect("edit_recipe", pk)
 
     else:
+        if current_recipe.owner != request.user.username:
+            messages.success(request, "Read only as someone else owns this recipe")
+            disabled_state = "disabled"
+        else:
+            disabled_state = ""
+
         used_grains = GrainRecipe.objects.filter(recipe=current_recipe).values_list("grain")
 
         context = {'recipe': current_recipe,
+                   'disabled_state': disabled_state,
                    'grain_recipes': GrainRecipe.objects.filter(recipe=pk),
                    'hop_recipes': HopRecipe.objects.filter(recipe=pk),
                    'all_grain': Grain.objects.all(),
@@ -139,7 +148,7 @@ def add_grain(request, pk):
     current_recipe = Recipe.objects.get(pk=pk)
     if current_recipe.owner != request.user.username:
         messages.success(request, "You can't edit someone else's recipe")
-        return redirect("recipe")
+        return redirect("edit_recipe", pk)
 
     if request.method != "POST":
         return redirect("recipe")
@@ -160,7 +169,7 @@ def add_hop(request, pk):
     current_recipe = Recipe.objects.get(pk=pk)
     if current_recipe.owner != request.user.username:
         messages.success(request, "You can't edit someone else's recipe")
-        return redirect("recipe")
+        return redirect("edit_recipe", pk)
 
     if request.method != "POST":
         return redirect("recipe")
@@ -188,7 +197,7 @@ def edit_grain(request, pk):
     current_recipe = GrainRecipe.objects.get(pk=pk)
     if current_recipe.recipe.owner != request.user.username:
         messages.success(request, "You can't edit someone else's recipe")
-        return redirect("recipe")
+        return redirect("edit_recipe", pk)
 
     if request.method != "POST":
         return redirect("recipe")
@@ -206,7 +215,7 @@ def edit_hop(request, pk):
     current_recipe = HopRecipe.objects.get(pk=pk)
     if current_recipe.recipe.owner != request.user.username:
         messages.success(request, "You can't edit someone else's recipe")
-        return redirect("recipe")
+        return redirect("edit_recipe", pk)
 
     if request.method != "POST":
         return redirect("recipe")

@@ -46,7 +46,7 @@ class Recipe(models.Model):
     owner = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
     batch_size_l = models.FloatField(default=0)
-    comments = models.CharField(max_length=1000)
+    comments = models.CharField(max_length=1000, blank=True)
     yeast = models.ForeignKey(Ingredient, on_delete=models.DO_NOTHING, null=True)
 
     def lovibondToRgb(self, lovibond):
@@ -92,9 +92,17 @@ class Recipe(models.Model):
             total_color += grain_recipe.grain.color_lovibond * grain_recipe.quantity_g
             total_weight += grain_recipe.quantity_g
 
-        og = 1 + (pts / batch_size_g) / 1000
-        diastatic_power = total_dp / total_weight
-        color_l = total_color / total_weight
+        if batch_size_g == 0:
+            og = 1
+        else:
+            og = 1 + (pts / batch_size_g) / 1000
+
+        if total_weight == 0:
+            diastatic_power = 0
+            color_l = 0
+        else:
+            diastatic_power = total_dp / total_weight
+            color_l = total_color / total_weight
 
         # Tinseth’s IBU Formula (https://homebrewacademy.com/ibu-calculator/)
         #

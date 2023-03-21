@@ -5,20 +5,18 @@
 <h1>Recipe</h1>
 {% if user.is_authenticated %}
     <table class="table">
-        <thead><tr><th scope="col">Recipe</th><th scope="col">Owner</th><th scope="col"></th></tr></thead>
+        <thead><tr><th scope="col">Recipe</th><th scope="col">Owner</th></tr></thead>
         <tbody>
             {% for recipe in recipes %}
                 <tr>
                     <td><a href="/recipe/{{recipe.pk}}">{{ recipe.name }}</a> {% include 'recipe_stats.html' %}</td>
                     <td>{{ recipe.owner }}</td>
-                    <td><a class="btn btn-primary" href="/recipe/{{recipe.pk}}" role="button">Edit</a></td>
                 </tr>
             {% endfor %}
             <tr><form method="post" action="/recipe/add">
                 {% csrf_token %}
-                <td><input type="text" class="form-control" name="name"></td>
-                <td>{{ user.username }}</td>
-                <td><button type="submit" class="btn btn-primary">Add</button></td>
+                <td><button type="submit" class="btn btn-primary">Create new recipe</button></td>
+                <td></td>
             </form></tr>
         </tbody>
     </table>
