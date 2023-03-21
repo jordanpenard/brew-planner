@@ -1,21 +1,24 @@
 {% extends 'master.html' %}
-{% block title %} Edit {{ recipe.name }}{% endblock title %}
+{% block title %}{{ recipe.name }}{% endblock title %}
 {% block content %}
 
-<script>
-  function grain_recipe_edit(pk) {
-     document.getElementById("grain_edit_"+pk).removeAttribute("hidden");
-     document.getElementById("grain_recipe_"+pk).setAttribute("hidden", "hidden");
-  }
-  function hop_recipe_edit(pk) {
-     document.getElementById("hop_edit_"+pk).removeAttribute("hidden");
-     document.getElementById("hop_recipe_"+pk).setAttribute("hidden", "hidden");
-  }
-</script>
-
-<h1>Edit {{ recipe.name }}</h1>
 {% if user.is_authenticated %}
-    <form method="post" action="/recipe/{{recipe.pk}}/edit">
+    <script>
+      function grain_recipe_edit(pk) {
+         document.getElementById("grain_edit_"+pk).removeAttribute("hidden");
+         document.getElementById("grain_recipe_"+pk).setAttribute("hidden", "hidden");
+      }
+      function hop_recipe_edit(pk) {
+         document.getElementById("hop_edit_"+pk).removeAttribute("hidden");
+         document.getElementById("hop_recipe_"+pk).setAttribute("hidden", "hidden");
+      }
+    </script>
+
+    <br>
+    <h3>{% include 'recipe_stats.html' %}</h3>
+    <br>
+
+    <form method="post" action="/recipe/{{recipe.pk}}">
         {% csrf_token %}
         <div class="form-floating mb-3">
             <input type="text" class="form-control" name="name" id="name" placeholder="Recipe name" value="{{ recipe.name }}">

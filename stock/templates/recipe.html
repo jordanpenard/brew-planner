@@ -9,9 +9,9 @@
         <tbody>
             {% for recipe in recipes %}
                 <tr>
-                    <td>{{ recipe.name }}</td>
+                    <td><a href="/recipe/{{recipe.pk}}">{{ recipe.name }}</a> {% include 'recipe_stats.html' %}</td>
                     <td>{{ recipe.owner }}</td>
-                    <td><a class="btn btn-primary" href="/recipe/{{recipe.pk}}/edit" role="button">Edit</a></td>
+                    <td><a class="btn btn-primary" href="/recipe/{{recipe.pk}}" role="button">Edit</a></td>
                 </tr>
             {% endfor %}
             <tr><form method="post" action="/recipe/add">

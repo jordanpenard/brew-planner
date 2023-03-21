@@ -1,0 +1,9 @@
+<span class="badge rounded-pill bg-primary">OG : {{recipe.stats.og}}</span>
+<span class="badge rounded-pill bg-warning text-dark">IBU : {{recipe.stats.ibu}}</span>
+{% if recipe.stats.diastatic_power > "30" %}
+    <span class="badge rounded-pill bg-success">DP : {{recipe.stats.diastatic_power}}</span>
+{% else %}
+    <span class="badge rounded-pill bg-danger">DP : {{recipe.stats.diastatic_power}}</span>
+{% endif %}
+
+<i class="fas fa-beer" style="color: {{recipe.stats.color_rgb}}; vertical-align: middle; font-size: 130%;" title="Color : {{recipe.stats.color_l}}°L"></i>
