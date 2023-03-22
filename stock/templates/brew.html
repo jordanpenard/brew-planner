@@ -9,7 +9,11 @@
         <tbody>
             {% for brew in brews %}
                 <tr>
-                    <td><a href="/brew/{{brew.pk}}">{{ brew.name }}</a> {% include 'brew_stats.html' %}</td>
+                    <td><a href="/brew/{{brew.pk}}">{{ brew }}</a>
+                        {% with stats=brew.stats %}
+                        {% include 'beer_stats.html' %}
+                        {% endwith %}
+                    </td>
                     <td>{{ brew.owner }}</td>
                 </tr>
             {% endfor %}

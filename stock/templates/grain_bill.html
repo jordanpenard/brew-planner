@@ -1,0 +1,68 @@
+<br>
+<h2>Grain bill</h2>
+<table class="table" id="grain_recipe">
+    <tbody>
+        {% for grain_recipe in grain_recipes %}
+            <tr id="grain_recipe_{{grain_recipe.pk}}">
+                <td>{{ grain_recipe.grain }}</td>
+                <td>{{ grain_recipe.quantity_g }}g</td>
+                <td>
+                    {% if disabled_state != "disabled" %}
+                        <button type="button" onclick="grain_recipe_edit({{grain_recipe.pk}})" class="btn btn-primary">Edit</button>
+                    {% endif %}
+                </td>
+            </tr>
+
+            <tr hidden="hidden" id="grain_edit_{{grain_recipe.pk}}">
+                <form method="post" action="/recipe/edit_grain/{{grain_recipe.pk}}">
+                    {% csrf_token %}
+                    <td>
+                        <div class="form-floating mb-3">
+                            <select name="grain" class="form-select" id="grain_{{grain_recipe.pk}}">
+                                {% for grain in all_grain %}
+                                    <option value="{{ grain.pk }}"
+                                        {% if grain.pk == grain_recipe.grain.pk %} selected {% endif %}
+                                    >{{ grain }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="grain_{{grain_recipe.pk}}">Grain</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="grain_quantity_g_{{grain_recipe.pk}}" name="quantity_g" value="{{ grain_recipe.quantity_g }}" placeholder="Quantity (g)">
+                            <label for="grain_quantity_g_{{grain_recipe.pk}}">Quantity (g)</label>
+                        </div>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </td>
+                </form>
+            </tr>
+        {% endfor %}
+        {% if disabled_state != "disabled" %}
+            <form method="post" action="/recipe/{{recipe.pk}}/add_grain">
+                {% csrf_token %}
+                <tr>
+                    <td>
+                        <div class="form-floating mb-3">
+                            <select id="grain" name="grain" class="form-select">
+                                {% for grain in unused_grain %}
+                                    <option value="{{ grain.pk }}">{{ grain }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="grain">Grain</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="quantity_g" id="grain_quantity_g" placeholder="Quantity (g)">
+                            <label for="grain_quantity_g">Quantity (g)</label>
+                        </div>
+                    </td>
+                    <td><button type="submit" class="btn btn-primary">Add</button></td>
+                </tr>
+            </form>
+        {% endif %}
+    </tbody>
+</table>

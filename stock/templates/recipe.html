@@ -9,13 +9,19 @@
         <tbody>
             {% for recipe in recipes %}
                 <tr>
-                    <td><a href="/recipe/{{recipe.pk}}">{{ recipe.name }}</a> {% include 'recipe_stats.html' %}</td>
+                    <td><a href="/recipe/{{recipe.pk}}">{{ recipe.name }}</a>
+                        {% with stats=recipe.stats %}
+                        {% include 'beer_stats.html' %}
+                        {% endwith %}
+                    </td>
                     <td>{{ recipe.owner }}</td>
+                    <td><a class="btn btn-primary" href="/recipe/{{recipe.pk}}/new_brew">Brew</a></td>
                 </tr>
             {% endfor %}
             <tr><form method="post" action="/recipe/add">
                 {% csrf_token %}
                 <td><button type="submit" class="btn btn-primary">Create new recipe</button></td>
+                <td></td>
                 <td></td>
             </form></tr>
         </tbody>

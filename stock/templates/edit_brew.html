@@ -1,0 +1,116 @@
+{% extends 'master.html' %}
+{% block title %}{{ brew }}{% endblock title %}
+{% block content %}
+
+<h1>{{ brew }}</h1>
+<h3 style="float: right; margin-top: -50px;">
+    {% with stats=brew.stats %}
+        {% include 'beer_stats.html' %}
+    {% endwith %}
+</h3>
+<br>
+{% if user.is_authenticated %}
+
+    <ul class="nav nav-tabs" id="brewTab" role="tablist">
+    {% with 'Prep Brewing Fermenting Completed' as steps %}
+      {% for tab_name in steps.split %}
+        <li class="nav-item" role="presentation">
+            <button id="{{tab_name}}-tab" data-bs-toggle="tab" data-bs-target="#{{tab_name}}" type="button" role="tab" aria-controls="{{tab_name}}" aria-selected="true"
+            {% if brew.state == tab_name %}
+              style="font-weight: bold;" class="nav-link active"
+            {% else %}
+              class="nav-link"
+            {% endif %}
+            >{{tab_name}}</button>
+        </li>
+      {% endfor %}
+    {% endwith %}
+    </ul>
+    <div class="tab-content" id="myTabContent">
+      <div class="tab-pane fade
+        {% if brew.state == "Prep" %}
+            show active
+        {% endif %}
+        " id="Prep" role="tabpanel" aria-labelledby="Prep-tab" tabindex="0">
+        <br><br>
+        {% if brew.state == "Prep" %}
+            <a class="btn btn-success" href="/brew/{{brew.pk}}/next_state">
+                Move to Brewing
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        <br>
+        {% endif %}
+        <br>
+        <h5><ul>
+            <li>Recipe targets :
+                {% with stats=brew.recipe.stats %}
+                    {% include 'beer_stats.html' %}
+                {% endwith %}
+            </li>
+            <li>Batch size : {{ brew.recipe.batch_size_l }}L</li>
+            <li>Yeast : {{ brew.recipe.yeast }}</li>
+        </ul></h5>
+        {% with disabled_state="disabled" %}
+            {% include 'grain_bill.html' %}
+            {% include 'hop_bill.html' %}
+        {% endwith %}
+      </div>
+      <div class="tab-pane fade
+        {% if brew.state == "Brewing" %}
+            show active
+        {% endif %}
+        " id="Brewing" role="tabpanel" aria-labelledby="Brewing-tab" tabindex="0">
+        <br><br>
+        {% if brew.state == "Brewing" %}
+            <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
+                <i class="fa-solid fa-arrow-left"></i>
+                Move to Prep
+            </a>
+            <a class="btn btn-success" href="/brew/{{brew.pk}}/next_state">
+                Move to Fermenting
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        <br>
+        {% endif %}
+        <br>
+      </div>
+      <div class="tab-pane fade
+        {% if brew.state == "Fermenting" %}
+            show active
+        {% endif %}
+        " id="Fermenting" role="tabpanel" aria-labelledby="Fermenting-tab" tabindex="0">
+        <br><br>
+        {% if brew.state == "Fermenting" %}
+            <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
+                <i class="fa-solid fa-arrow-left"></i>
+                Move to Brewing
+            </a>
+            <a class="btn btn-success" href="/brew/{{brew.pk}}/next_state">
+                Move to Completed
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        <br>
+        {% endif %}
+        <br>
+      </div>
+      <div class="tab-pane fade
+        {% if brew.state == "Completed" %}
+            show active
+        {% endif %}
+        " id="Completed" role="tabpanel" aria-labelledby="Completed-tab" tabindex="0">
+        <br><br>
+        {% if brew.state == "Completed" %}
+            <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
+                <i class="fa-solid fa-arrow-left"></i>
+                Move to Fermenting
+            </a>
+        <br>
+        {% endif %}
+        <br>
+      </div>
+    </div>
+
+{% else %}
+    <div class="alert alert-danger" role="alert">You need to be logged in</div>
+{% endif %}
+{% endblock content %}

@@ -241,3 +241,66 @@ def brew(request):
     context = {'brews': Brew.objects.all()}
 
     return render(request, 'brew.html', context)
+
+
+def new_brew(request, recipe_pk):
+
+    new_entry = Brew(recipe=Recipe.objects.get(pk=recipe_pk), owner=request.user.username)
+    new_entry.save()
+    new_entry.name = "#" + str(new_entry.pk)
+    new_entry.save()
+
+    return redirect("brew")
+
+
+def edit_brew(request, pk):
+    current_brew = Brew.objects.get(pk=pk)
+    context = {'brew': current_brew,
+               'grain_recipes': GrainRecipe.objects.filter(recipe=current_brew.recipe.pk),
+               'hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk)}
+
+    return render(request, 'edit_brew.html', context)
+
+
+def next_state_brew(request, pk):
+
+    current_brew = Brew.objects.get(pk=pk)
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if current_brew.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's brew")
+        return redirect("edit_brew", pk=pk)
+
+    if current_brew.state == Brew.BrewState.PREP:
+        current_brew.state = Brew.BrewState.BREWING
+    elif current_brew.state == Brew.BrewState.BREWING:
+        current_brew.state = Brew.BrewState.FERMENTING
+    elif current_brew.state == Brew.BrewState.FERMENTING:
+        current_brew.state = Brew.BrewState.COMPLETED
+    current_brew.save()
+
+    return redirect("edit_brew", pk=pk)
+
+
+def previous_state_brew(request, pk):
+
+    current_brew = Brew.objects.get(pk=pk)
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if current_brew.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's brew")
+        return redirect("edit_brew", pk=pk)
+
+    if current_brew.state == Brew.BrewState.BREWING:
+        current_brew.state = Brew.BrewState.PREP
+    elif current_brew.state == Brew.BrewState.FERMENTING:
+        current_brew.state = Brew.BrewState.BREWING
+    elif current_brew.state == Brew.BrewState.COMPLETED:
+        current_brew.state = Brew.BrewState.FERMENTING
+    current_brew.save()
+
+    return redirect("edit_brew", pk=pk)

@@ -8,6 +8,7 @@ urlpatterns = [
     path('recipe/<int:pk>', views.edit_recipe, name="edit_recipe"),
     path('recipe/<int:pk>/add_grain', views.add_grain, name="add_grain"),
     path('recipe/<int:pk>/add_hop', views.add_hop, name="add_hop"),
+    path('recipe/<int:recipe_pk>/new_brew', views.new_brew, name="new_brew"),
     path('recipe/edit_grain/<int:pk>', views.edit_grain, name="edit_grain"),
     path('recipe/edit_hop/<int:pk>', views.edit_hop, name="edit_hop"),
     path('stock', views.stock, name="stock"),
@@ -16,4 +17,7 @@ urlpatterns = [
     path('ingredients', views.ingredients, name="ingredients"),
     path('ingredients/add', views.add_ingredients, name="add_ingredients"),
     path('brew', views.brew, name="brew"),
+    path('brew/<int:pk>', views.edit_brew, name="edit_brew"),
+    path('brew/<int:pk>/next_state', views.next_state_brew, name="next_state_brew"),
+    path('brew/<int:pk>/previous_state', views.previous_state_brew, name="previous_state_brew"),
 ]
