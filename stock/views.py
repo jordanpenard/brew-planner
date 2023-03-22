@@ -116,6 +116,7 @@ def edit_recipe(request, pk):
 
         current_recipe.name = request.POST['name']
         current_recipe.mash_temperature_c = request.POST['mash_temperature_c']
+        current_recipe.fermentation_temperature_c = request.POST['fermentation_temperature_c']
         current_recipe.batch_size_l = request.POST['batch_size_l']
         current_recipe.yeast = Yeast.objects.get(pk=request.POST['yeast'])
         current_recipe.comments = request.POST['comments']
@@ -255,9 +256,44 @@ def new_brew(request, recipe_pk):
 
 def edit_brew(request, pk):
     current_brew = Brew.objects.get(pk=pk)
+
+    grain_mass_g = 0
+    for grain in GrainRecipe.objects.filter(recipe=current_brew.recipe):
+        grain_mass_g += grain.quantity_g
+
+    mash_volume_l = current_brew.mash_thickness_lpkg * grain_mass_g/1000
+    evaporation_l = current_brew.evaporation_lph * current_brew.recipe.boil_time_min/60
+    target_pre_boil_volume_l = current_brew.recipe.batch_size_l + evaporation_l
+    sparge_volume_l = target_pre_boil_volume_l - mash_volume_l
+
+    target_pre_boil_gravity = 1 + (float(current_brew.recipe.stats()['og'])-1) * (current_brew.recipe.batch_size_l/target_pre_boil_volume_l)
+
+    # Mash strike temperature is the temperature at which the water needs to be so once we added the grain we hit
+    #  our target mash temperature (Assuming the grains are at 18 degree C)
+    # Formula from https://homebrewanswers.com/document/calculating-strike-water-temperature-for-mashing
+    mash_strike_temperature_c = (0.41/current_brew.mash_thickness_lpkg) * (current_brew.recipe.mash_temperature_c - 18) + current_brew.recipe.mash_temperature_c
+
+    total_mash_mass_kg = (grain_mass_g/1000)+mash_volume_l
+    sparge_strike_temperature_c = (current_brew.mash_out_temp_c * (total_mash_mass_kg+sparge_volume_l) - total_mash_mass_kg * current_brew.recipe.mash_temperature_c)/sparge_volume_l
+
+    if current_brew.pre_boil_volume_l > 0:
+        estimated_volume_l = current_brew.pre_boil_volume_l - evaporation_l
+        estimated_og = 1 + current_brew.pre_boil_volume_l * (current_brew.pre_boil_gravity - 1) / estimated_volume_l
+    else:
+        estimated_og = float(current_brew.recipe.stats()['og'])
+        estimated_volume_l = current_brew.recipe.batch_size_l
+
     context = {'brew': current_brew,
                'grain_recipes': GrainRecipe.objects.filter(recipe=current_brew.recipe.pk),
-               'hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk)}
+               'hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk),
+               'mash_volume_l': mash_volume_l,
+               'target_pre_boil_volume_l': target_pre_boil_volume_l,
+               'target_pre_boil_gravity': '{:.3f}'.format(target_pre_boil_gravity),
+               'mash_strike_temperature_c': '{:.1f}'.format(mash_strike_temperature_c),
+               'sparge_strike_temperature_c': '{:.1f}'.format(sparge_strike_temperature_c),
+               'estimated_volume_l': '{:.1f}'.format(estimated_volume_l),
+               'estimated_og': '{:.3f}'.format(estimated_og),
+               'sparge_volume_l': sparge_volume_l}
 
     return render(request, 'edit_brew.html', context)
 
@@ -274,8 +310,10 @@ def next_state_brew(request, pk):
         return redirect("edit_brew", pk=pk)
 
     if current_brew.state == Brew.BrewState.PREP:
-        current_brew.state = Brew.BrewState.BREWING
-    elif current_brew.state == Brew.BrewState.BREWING:
+        current_brew.state = Brew.BrewState.MASH
+    elif current_brew.state == Brew.BrewState.MASH:
+        current_brew.state = Brew.BrewState.BOIL
+    elif current_brew.state == Brew.BrewState.BOIL:
         current_brew.state = Brew.BrewState.FERMENTING
     elif current_brew.state == Brew.BrewState.FERMENTING:
         current_brew.state = Brew.BrewState.COMPLETED
@@ -295,12 +333,91 @@ def previous_state_brew(request, pk):
         messages.success(request, "You can't edit someone else's brew")
         return redirect("edit_brew", pk=pk)
 
-    if current_brew.state == Brew.BrewState.BREWING:
+    if current_brew.state == Brew.BrewState.MASH:
         current_brew.state = Brew.BrewState.PREP
+    elif current_brew.state == Brew.BrewState.BOIL:
+        current_brew.state = Brew.BrewState.MASH
     elif current_brew.state == Brew.BrewState.FERMENTING:
-        current_brew.state = Brew.BrewState.BREWING
+        current_brew.state = Brew.BrewState.BOIL
     elif current_brew.state == Brew.BrewState.COMPLETED:
         current_brew.state = Brew.BrewState.FERMENTING
+    current_brew.save()
+
+    return redirect("edit_brew", pk=pk)
+
+
+def save_prep(request, pk):
+
+    current_brew = Brew.objects.get(pk=pk)
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if current_brew.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's brew")
+        return redirect("edit_brew", pk=pk)
+
+    current_brew.brew_date = request.POST['brew_date']
+    current_brew.mash_thickness_lpkg = request.POST['mash_thickness_lpkg']
+    current_brew.evaporation_lph = request.POST['evaporation_lph']
+    current_brew.mash_out_temp_c = request.POST['mash_out_temp_c']
+    current_brew.save()
+
+    return redirect("edit_brew", pk=pk)
+
+
+def save_mash(request, pk):
+
+    current_brew = Brew.objects.get(pk=pk)
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if current_brew.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's brew")
+        return redirect("edit_brew", pk=pk)
+
+    current_brew.measured_mash_temp_c = request.POST['measured_mash_temp_c']
+    current_brew.measured_mash_ph = request.POST['measured_mash_ph']
+    current_brew.save()
+
+    return redirect("edit_brew", pk=pk)
+
+
+def save_boil(request, pk):
+
+    current_brew = Brew.objects.get(pk=pk)
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if current_brew.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's brew")
+        return redirect("edit_brew", pk=pk)
+
+    current_brew.pre_boil_volume_l = request.POST['pre_boil_volume_l']
+    current_brew.pre_boil_gravity = request.POST['pre_boil_gravity']
+    current_brew.measured_og = request.POST['measured_og']
+    current_brew.fermenter_volume_l = request.POST['fermenter_volume_l']
+    current_brew.save()
+
+    return redirect("edit_brew", pk=pk)
+
+
+def save_completed(request, pk):
+
+    current_brew = Brew.objects.get(pk=pk)
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if current_brew.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's brew")
+        return redirect("edit_brew", pk=pk)
+
+    current_brew.bottling_date = request.POST['bottling_date']
+    current_brew.measured_fg = request.POST['measured_fg']
+    current_brew.bottling_volume_l = request.POST['bottling_volume_l']
     current_brew.save()
 
     return redirect("edit_brew", pk=pk)

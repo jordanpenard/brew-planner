@@ -50,7 +50,9 @@ class Recipe(models.Model):
     batch_size_l = models.FloatField(default=0)
     comments = models.CharField(max_length=1000, blank=True)
     yeast = models.ForeignKey(Ingredient, on_delete=models.DO_NOTHING, null=True)
-    mash_temperature_c = models.FloatField(default=0)
+    mash_temperature_c = models.FloatField(default=65)
+    fermentation_temperature_c = models.FloatField(default=18)
+    boil_time_min = models.IntegerField(default=60)
 
     def stats(self):
 
@@ -102,7 +104,8 @@ class Brew(models.Model):
 
     class BrewState(models.TextChoices):
         PREP = "Prep"
-        BREWING = "Brewing"
+        MASH = "Mash"
+        BOIL = "Boil"
         FERMENTING = "Fermenting"
         COMPLETED = "Completed"
 
@@ -111,12 +114,21 @@ class Brew(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.DO_NOTHING)
     state = models.CharField(max_length=20, choices=BrewState.choices, default=BrewState.PREP)
 
-    brew_date = models.DateTimeField(null=True)
-    bottling_date = models.DateTimeField(null=True)
+    brew_date = models.DateField(null=True, blank=True)
+    bottling_date = models.DateField(null=True, blank=True)
 
+    mash_thickness_lpkg = models.FloatField(default=3)
+    evaporation_lph = models.FloatField(default=2)
+    mash_out_temp_c = models.FloatField(default=72)
+
+    pre_boil_volume_l = models.FloatField(default=0)
+    pre_boil_gravity = models.FloatField(default=1)
     measured_og = models.FloatField(default=1)
     measured_fg = models.FloatField(default=1)
     measured_mash_ph = models.FloatField(default=0)
+    measured_mash_temp_c = models.FloatField(default=0)
+    fermenter_volume_l = models.FloatField(default=0)
+    bottling_volume_l = models.FloatField(default=0)
 
     def __str__(self):
         return self.name + " - " + self.recipe.name + " - " + self.state

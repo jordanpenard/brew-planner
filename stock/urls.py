@@ -20,4 +20,8 @@ urlpatterns = [
     path('brew/<int:pk>', views.edit_brew, name="edit_brew"),
     path('brew/<int:pk>/next_state', views.next_state_brew, name="next_state_brew"),
     path('brew/<int:pk>/previous_state', views.previous_state_brew, name="previous_state_brew"),
+    path('brew/<int:pk>/save_prep', views.save_prep, name="save_prep"),
+    path('brew/<int:pk>/save_mash', views.save_mash, name="save_mash"),
+    path('brew/<int:pk>/save_boil', views.save_boil, name="save_boil"),
+    path('brew/<int:pk>/save_completed', views.save_completed, name="save_completed"),
 ]
