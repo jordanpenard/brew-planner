@@ -24,36 +24,52 @@
 
     <form method="post" action="/recipe/{{recipe.pk}}">
         {% csrf_token %}
-        <div class="form-floating mb-3">
-            <input type="text" class="form-control" name="name" id="name" placeholder="Recipe name" value="{{ recipe.name }}" {{disabled_state}}>
-            <label for="name">Recipe name</label>
+        <div class="row">
+            <div class="col-12">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="name" id="name" placeholder="Recipe name" value="{{ recipe.name }}" {{disabled_state}}>
+                    <label for="name">Recipe name</label>
+                </div>
+            </div>
         </div>
 
-        <div class="form-floating mb-3">
-            <input type="text" class="form-control" name="batch_size_l" id="batch_size_l" placeholder="Batch size (L)" value="{{ recipe.batch_size_l }}" {{disabled_state}}>
-            <label for="batch_size_l">Batch size (L)</label>
+        <div class="row">
+            <div class="col-4 col-xl-2">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="batch_size_l" id="batch_size_l" placeholder="Batch size (L)" value="{{ recipe.batch_size_l }}" {{disabled_state}}>
+                    <label for="batch_size_l">Batch size (L)</label>
+                </div>
+            </div>
+
+            <div class="col-8 col-xl-4 col-xxl-5">
+                <div class="form-floating mb-3">
+                    <select id="yeast" name="yeast" class="form-select" {{disabled_state}}>
+                      {% for yeast in all_yeast %}
+                        <option value="{{ yeast.pk }}"
+                                {% if yeast == recipe.yeast %} selected {% endif %}
+                        >{{ yeast }}</option>
+                      {% endfor %}
+                    </select>
+                    <label for="yeast">Yeast</label>
+                </div>
+            </div>
+
+            <div class="col-6 col-xl-3 col-xxl-2">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="mash_temperature_c" id="mash_temperature_c" placeholder="Mash temperature (°C)" value="{{ recipe.mash_temperature_c }}" {{disabled_state}}>
+                    <label for="mash_temperature_c">Mash temperature (°C)</label>
+                </div>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="fermentation_temperature_c" id="fermentation_temperature_c" placeholder="Fermentation temperature (°C)" value="{{ recipe.fermentation_temperature_c }}" {{disabled_state}}>
+                    <label for="fermentation_temperature_c">Fermentation temperature (°C)</label>
+                </div>
+            </div>
+
         </div>
 
-        <div class="form-floating mb-3">
-            <input type="text" class="form-control" name="mash_temperature_c" id="mash_temperature_c" placeholder="Mash temperature (°C)" value="{{ recipe.mash_temperature_c }}" {{disabled_state}}>
-            <label for="mash_temperature_c">Mash temperature (°C)</label>
-        </div>
-
-        <div class="form-floating mb-3">
-            <input type="text" class="form-control" name="fermentation_temperature_c" id="fermentation_temperature_c" placeholder="Fermentation temperature (°C)" value="{{ recipe.fermentation_temperature_c }}" {{disabled_state}}>
-            <label for="fermentation_temperature_c">Fermentation temperature (°C)</label>
-        </div>
-
-        <div class="form-floating mb-3">
-            <select id="yeast" name="yeast" class="form-select" {{disabled_state}}>
-              {% for yeast in all_yeast %}
-                <option value="{{ yeast.pk }}"
-                        {% if yeast == recipe.yeast %} selected {% endif %}
-                >{{ yeast }}</option>
-              {% endfor %}
-            </select>
-            <label for="yeast">Yeast</label>
-        </div>
 
         <div class="form-floating mb-3">
             <textarea class="form-control" placeholder="Comments" id="comments" name="comments" style="height: 100px" {{disabled_state}}>{{ recipe.comments }}</textarea>

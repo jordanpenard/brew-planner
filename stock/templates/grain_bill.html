@@ -4,8 +4,8 @@
     <tbody>
         {% for grain_recipe in grain_recipes %}
             <tr id="grain_recipe_{{grain_recipe.pk}}">
-                <td>{{ grain_recipe.grain }}</td>
-                <td>{{ grain_recipe.quantity_g }}g</td>
+                <td><label style="margin-top: 5px;">{{ grain_recipe.grain }}</label></td>
+                <td><label style="margin-top: 5px;">{{ grain_recipe.quantity_g }}g</label></td>
                 <td>
                     {% if disabled_state != "disabled" %}
                         <button type="button" onclick="grain_recipe_edit({{grain_recipe.pk}})" class="btn btn-primary">Edit</button>
@@ -17,7 +17,7 @@
                 <form method="post" action="/recipe/edit_grain/{{grain_recipe.pk}}">
                     {% csrf_token %}
                     <td>
-                        <div class="form-floating mb-3">
+                        <div class="form-floating">
                             <select name="grain" class="form-select" id="grain_{{grain_recipe.pk}}">
                                 {% for grain in all_grain %}
                                     <option value="{{ grain.pk }}"
@@ -29,7 +29,7 @@
                         </div>
                     </td>
                     <td>
-                        <div class="form-floating mb-3">
+                        <div class="form-floating">
                             <input type="text" class="form-control" id="grain_quantity_g_{{grain_recipe.pk}}" name="quantity_g" value="{{ grain_recipe.quantity_g }}" placeholder="Quantity (g)">
                             <label for="grain_quantity_g_{{grain_recipe.pk}}">Quantity (g)</label>
                         </div>
@@ -45,7 +45,7 @@
                 {% csrf_token %}
                 <tr>
                     <td>
-                        <div class="form-floating mb-3">
+                        <div class="form-floating">
                             <select id="grain" name="grain" class="form-select">
                                 {% for grain in unused_grain %}
                                     <option value="{{ grain.pk }}">{{ grain }}</option>
@@ -55,7 +55,7 @@
                         </div>
                     </td>
                     <td>
-                        <div class="form-floating mb-3">
+                        <div class="form-floating">
                             <input type="text" class="form-control" name="quantity_g" id="grain_quantity_g" placeholder="Quantity (g)">
                             <label for="grain_quantity_g">Quantity (g)</label>
                         </div>

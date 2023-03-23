@@ -9,12 +9,12 @@
         <tbody>
             {% for recipe in recipes %}
                 <tr>
-                    <td><a href="/recipe/{{recipe.pk}}">{{ recipe.name }}</a>
+                    <td style="padding-top: 14px;"><a href="/recipe/{{recipe.pk}}">{{ recipe.name }}</a>
                         {% with stats=recipe.stats %}
                         {% include 'beer_stats.html' %}
                         {% endwith %}
                     </td>
-                    <td>{{ recipe.owner }}</td>
+                    <td style="padding-top: 14px;">{{ recipe.owner }}</td>
                     <td><a class="btn btn-primary" href="/recipe/{{recipe.pk}}/new_brew">Brew</a></td>
                 </tr>
             {% endfor %}

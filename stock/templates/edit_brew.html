@@ -2,8 +2,29 @@
 {% block title %}{{ brew }}{% endblock title %}
 {% block content %}
 
+<style>
+    .brew_stats {
+        float: right;
+        margin-top: -50px;
+    }
+    @media (max-width: 1399.98px) {
+        .brew_stats {
+            float: right;
+            margin-top: 0px;
+        }
+        .brew_menu {
+            margin-top: 30px;
+        }
+    }
+    @media (max-width: 767.98px) {
+        .brew_menu {
+            margin-top: 60px;
+        }
+    }
+</style>
+
 <h1>{{ brew }}</h1>
-<h3 style="float: right; margin-top: -50px;">
+<h3 class="brew_stats">
     {% with stats=brew.stats %}
         {% include 'beer_stats.html' %}
     {% endwith %}
@@ -12,7 +33,7 @@
 {% if user.is_authenticated %}
 
     <!-- Tabs -->
-    <ul class="nav nav-tabs" id="brewTab" role="tablist">
+    <ul class="nav nav-tabs brew_menu" id="brewTab" role="tablist">
     {% with 'Prep Mash Boil Fermenting Completed' as steps %}
         {% for tab_name in steps.split %}
         <li class="nav-item" role="presentation">
@@ -35,7 +56,7 @@
                 show active
             {% endif %}
             " id="Prep" role="tabpanel" aria-labelledby="Prep-tab" tabindex="0">
-            <br><br>
+            <br>
             {% if brew.state == "Prep" %}
                 <a class="btn btn-success" href="/brew/{{brew.pk}}/next_state">
                     Move to Mash
@@ -60,28 +81,39 @@
             <br>
             <form method="post" action="/brew/{{brew.pk}}/save_prep">
                 {% csrf_token %}
-                <div class="form-floating mb-3">
-                    <input type="date" class="form-control" name="brew_date" id="brew_date" placeholder="Brew date" value="{{ brew.brew_date|date:"Y-m-d" }}" {{disabled_state}}>
-                    <label for="brew_date">Brew date</label>
+                <div class="row">
+                    <div class="col-6 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <input type="date" class="form-control" name="brew_date" id="brew_date" placeholder="Brew date" value="{{ brew.brew_date|date:"Y-m-d" }}" {{disabled_state}}>
+                            <label for="brew_date">Brew date</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="mash_out_temp_c" id="mash_out_temp_c" placeholder="Mash out temperature (°C)" value="{{ brew.mash_out_temp_c }}" {{disabled_state}}>
+                            <label for="mash_out_temp_c">Mash out temperature (°C)</label>
+                        </div>
+                    </div>
+                    <div class="col-5 col-lg-3 col-xxl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="evaporation_lph" id="evaporation_lph" placeholder="Evaporation (L/h)" value="{{ brew.evaporation_lph }}" {{disabled_state}}>
+                            <label for="evaporation_lph">Evaporation (L/h)</label>
+                        </div>
+                    </div>
+                    <div class="col-5 col-lg-3 col-xxl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="mash_thickness_lpkg" id="mash_thickness_lpkg" placeholder="Mash thickness (L/kg)" value="{{ brew.mash_thickness_lpkg }}" {{disabled_state}}>
+                            <label for="mash_thickness_lpkg">Mash thickness (L/kg)</label>
+                        </div>
+                    </div>
+                    <div class="col-2 col-lg-1">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
                 </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="mash_thickness_lpkg" id="mash_thickness_lpkg" placeholder="Mash thickness (L/kg)" value="{{ brew.mash_thickness_lpkg }}" {{disabled_state}}>
-                    <label for="mash_thickness_lpkg">Mash thickness (L/kg)</label>
-                </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="evaporation_lph" id="evaporation_lph" placeholder="Evaporation (L/h)" value="{{ brew.evaporation_lph }}" {{disabled_state}}>
-                    <label for="evaporation_lph">Evaporation (L/h)</label>
-                </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="mash_out_temp_c" id="mash_out_temp_c" placeholder="Mash out temperature (°C)" value="{{ brew.mash_out_temp_c }}" {{disabled_state}}>
-                    <label for="mash_out_temp_c">Mash out temperature (°C)</label>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Save
-                </button>
             </form>
-            <br>
 
             {% with disabled_state="disabled" %}
                 {% include 'grain_bill.html' %}
@@ -96,7 +128,7 @@
                 show active
             {% endif %}
             " id="Mash" role="tabpanel" aria-labelledby="Mash-tab" tabindex="0">
-            <br><br>
+            <br>
             {% if brew.state == "Mash" %}
                 <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
                     <i class="fa-solid fa-arrow-left"></i>
@@ -108,7 +140,6 @@
                 </a>
                 <br>
             {% endif %}
-            <br>
 
             {% with disabled_state="disabled" %}
                 {% include 'grain_bill.html' %}
@@ -124,18 +155,26 @@
             <br>
             <form method="post" action="/brew/{{brew.pk}}/save_mash">
                 {% csrf_token %}
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="measured_mash_temp_c" id="measured_mash_temp_c" placeholder="Mash temperature (°C)" value="{{ brew.measured_mash_temp_c }}" {{disabled_state}}>
-                    <label for="measured_mash_temp_c">Mash temperature (°C)</label>
+                <div class="row">
+                    <div class="col-6 col-lg-3">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="measured_mash_temp_c" id="measured_mash_temp_c" placeholder="Mash temperature (°C)" value="{{ brew.measured_mash_temp_c }}" {{disabled_state}}>
+                            <label for="measured_mash_temp_c">Mash temperature (°C)</label>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-3 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="measured_mash_ph" id="measured_mash_ph" placeholder="Mash pH" value="{{ brew.measured_mash_ph }}" {{disabled_state}}>
+                            <label for="measured_mash_ph">Mash pH</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
                 </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="measured_mash_ph" id="measured_mash_ph" placeholder="Mash pH" value="{{ brew.measured_mash_ph }}" {{disabled_state}}>
-                    <label for="measured_mash_ph">Mash pH</label>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Save
-                </button>
             </form>
             <br><br>
         </div>
@@ -146,7 +185,7 @@
                 show active
             {% endif %}
             " id="Boil" role="tabpanel" aria-labelledby="Boil-tab" tabindex="0">
-            <br><br>
+            <br>
             {% if brew.state == "Boil" %}
                 <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
                     <i class="fa-solid fa-arrow-left"></i>
@@ -158,7 +197,7 @@
                 </a>
                 <br>
             {% endif %}
-            <br>
+
             {% with disabled_state="disabled" %}
                 {% include 'hop_bill.html' %}
             {% endwith %}
@@ -176,26 +215,38 @@
             <br>
             <form method="post" action="/brew/{{brew.pk}}/save_boil">
                 {% csrf_token %}
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="pre_boil_volume_l" id="pre_boil_volume_l" placeholder="Pre boil volume (L)" value="{{ brew.pre_boil_volume_l }}" {{disabled_state}}>
-                    <label for="pre_boil_volume_l">Pre boil volume (L)</label>
+                <div class="row">
+                    <div class="col-6 col-lg-3 col-xxl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="pre_boil_volume_l" id="pre_boil_volume_l" placeholder="Pre boil volume (L)" value="{{ brew.pre_boil_volume_l }}" {{disabled_state}}>
+                            <label for="pre_boil_volume_l">Pre boil volume (L)</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3 col-xxl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="fermenter_volume_l" id="fermenter_volume_l" placeholder="End of boil volume (L)" value="{{ brew.fermenter_volume_l }}" {{disabled_state}}>
+                            <label for="fermenter_volume_l">End of boil volume (L)</label>
+                        </div>
+                    </div>
+                    <div class="col-5 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="pre_boil_gravity" id="pre_boil_gravity" placeholder="Pre boil gravity" value="{{ brew.pre_boil_gravity }}" {{disabled_state}}>
+                            <label for="pre_boil_gravity">Pre boil gravity</label>
+                        </div>
+                    </div>
+                    <div class="col-5 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="measured_og" id="measured_og" placeholder="Original gravity" value="{{ brew.measured_og }}" {{disabled_state}}>
+                            <label for="measured_og">Original gravity</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
                 </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="pre_boil_gravity" id="pre_boil_gravity" placeholder="Pre boil gravity" value="{{ brew.pre_boil_gravity }}" {{disabled_state}}>
-                    <label for="pre_boil_gravity">Pre boil gravity</label>
-                </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="measured_og" id="measured_og" placeholder="Original gravity" value="{{ brew.measured_og }}" {{disabled_state}}>
-                    <label for="measured_og">Original gravity</label>
-                </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="fermenter_volume_l" id="fermenter_volume_l" placeholder="End of boil volume (L)" value="{{ brew.fermenter_volume_l }}" {{disabled_state}}>
-                    <label for="fermenter_volume_l">End of boil volume (L)</label>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Save
-                </button>
             </form>
             <br><br>
         </div>
@@ -206,7 +257,7 @@
                 show active
             {% endif %}
             " id="Fermenting" role="tabpanel" aria-labelledby="Fermenting-tab" tabindex="0">
-            <br><br>
+            <br>
             {% if brew.state == "Fermenting" %}
                 <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
                     <i class="fa-solid fa-arrow-left"></i>
@@ -219,6 +270,24 @@
                 <br>
             {% endif %}
             <br>
+            <form method="post" action="/brew/{{brew.pk}}/save_fermenting">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-10">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="brew_monitor_link" id="brew_monitor_link" placeholder="Brew monitor link" value="{{ brew.brew_monitor_link }}" {{disabled_state}}>
+                            <label for="brew_monitor_link">Brew monitor link</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br><br>
         </div>
 
         <!-- Completed tab -->
@@ -227,7 +296,7 @@
                 show active
             {% endif %}
             " id="Completed" role="tabpanel" aria-labelledby="Completed-tab" tabindex="0">
-            <br><br>
+            <br>
             {% if brew.state == "Completed" %}
                 <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
                     <i class="fa-solid fa-arrow-left"></i>
@@ -238,22 +307,32 @@
             <br>
             <form method="post" action="/brew/{{brew.pk}}/save_completed">
                 {% csrf_token %}
-                <div class="form-floating mb-3">
-                    <input type="date" class="form-control" name="bottling_date" id="bottling_date" placeholder="Bottling date" value="{{ brew.bottling_date|date:"Y-m-d" }}" {{disabled_state}}>
-                    <label for="bottling_date">Bottling date</label>
+                <div class="row">
+                    <div class="col-6 col-lg-3 col-xl-2">
+                        <div class="form-floating mb-3">
+                            <input type="date" class="form-control" name="bottling_date" id="bottling_date" placeholder="Bottling date" value="{{ brew.bottling_date|date:"Y-m-d" }}" {{disabled_state}}>
+                            <label for="bottling_date">Bottling date</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3 col-xl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="measured_fg" id="measured_fg" placeholder="Final gravity" value="{{ brew.measured_fg }}" {{disabled_state}}>
+                            <label for="measured_fg">Final gravity</label>
+                        </div>
+                    </div>
+                    <div class="col-10 col-sm-8 col-md-6 col-lg-3 col-xl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="bottling_volume_l" id="bottling_volume_l" placeholder="Bottling volume (L)" value="{{ brew.bottling_volume_l }}" {{disabled_state}}>
+                            <label for="bottling_volume_l">Bottling volume (L)</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
                 </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="measured_fg" id="measured_fg" placeholder="Final gravity" value="{{ brew.measured_fg }}" {{disabled_state}}>
-                    <label for="measured_fg">Final gravity</label>
-                </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" name="bottling_volume_l" id="bottling_volume_l" placeholder="Bottling volume (L)" value="{{ brew.bottling_volume_l }}" {{disabled_state}}>
-                    <label for="bottling_volume_l">Bottling volume (L)</label>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Save
-                </button>
             </form>
             <br><br>
         </div>

@@ -23,10 +23,10 @@
                             {% csrf_token %}
                             <input type="hidden" name="pk" value="{{entry.pk}}">
                             <td>
-                                {{entry.ingredient}}
+                                <label style="margin-top: 5px;">{{entry.ingredient}}</label>
                             </td>
                             <td>
-                                <label id="l_quantity_g_{{entry.pk}}">{{entry.quantity_g}}</label>
+                                <label id="l_quantity_g_{{entry.pk}}" style="margin-top: 5px;">{{entry.quantity_g}}</label>
                                 <input hidden="hidden" type="text" class="form-control" id="quantity_g_{{entry.pk}}" name="quantity_g" value="{{entry.quantity_g}}">
                             </td>
                             <td>

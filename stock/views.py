@@ -404,6 +404,23 @@ def save_boil(request, pk):
     return redirect("edit_brew", pk=pk)
 
 
+def save_fermenting(request, pk):
+
+    current_brew = Brew.objects.get(pk=pk)
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if current_brew.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's brew")
+        return redirect("edit_brew", pk=pk)
+
+    current_brew.brew_monitor_link = request.POST['brew_monitor_link']
+    current_brew.save()
+
+    return redirect("edit_brew", pk=pk)
+
+
 def save_completed(request, pk):
 
     current_brew = Brew.objects.get(pk=pk)

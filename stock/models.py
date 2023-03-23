@@ -130,6 +130,8 @@ class Brew(models.Model):
     fermenter_volume_l = models.FloatField(default=0)
     bottling_volume_l = models.FloatField(default=0)
 
+    brew_monitor_link = models.CharField(max_length=1000, default="", blank=True)
+
     def __str__(self):
         return self.name + " - " + self.recipe.name + " - " + self.state
 

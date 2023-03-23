@@ -4,15 +4,15 @@
     <tbody>
         {% for hop_recipe in hop_recipes %}
             <tr id="hop_recipe_{{hop_recipe.pk}}">
-                <td>{{ hop_recipe.hop }}</td>
-                <td>{{ hop_recipe.quantity_g }}g</td>
-                <td>
+                <td><label style="margin-top: 5px;">{{ hop_recipe.hop }}</label></td>
+                <td><label style="margin-top: 5px;">{{ hop_recipe.quantity_g }}g</label></td>
+                <td><label style="margin-top: 5px;">
                     {% if hop_recipe.dry_hop %}
                         Dry hop
                     {% else %}
                         {{ hop_recipe.time_min }} min
                     {% endif %}
-                </td>
+                </label></td>
                 <td>
                     {% if disabled_state != "disabled" %}
                         <button type="button" onclick="hop_recipe_edit({{hop_recipe.pk}})" class="btn btn-primary">Edit</button>
@@ -23,7 +23,7 @@
                 <form method="post" action="/recipe/edit_hop/{{hop_recipe.pk}}">
                     {% csrf_token %}
                     <td>
-                        <div class="form-floating mb-3">
+                        <div class="form-floating">
                             <select name="hop" class="form-select" id="hop_{{hop_recipe.pk}}">
                                 {% for hop in all_hop %}
                                     <option value="{{ hop.pk }}"
@@ -35,7 +35,7 @@
                         </div>
                     </td>
                     <td>
-                        <div class="form-floating mb-3">
+                        <div class="form-floating">
                             <input type="text" class="form-control" id="hop_quantity_g_{{hop_recipe.pk}}" name="quantity_g" value="{{ hop_recipe.quantity_g }}" placeholder="Quantity (g)">
                             <label for="hop_quantity_g_{{hop_recipe.pk}}">Quantity (g)</label>
                         </div>
@@ -65,7 +65,7 @@
                 {% csrf_token %}
                 <tr>
                     <td>
-                        <div class="form-floating mb-3">
+                        <div class="form-floating">
                             <select id="hop" name="hop" class="form-select">
                                 {% for hop in all_hop %}
                                     <option value="{{ hop.pk }}">{{ hop }}</option>
@@ -75,7 +75,7 @@
                         </div>
                     </td>
                     <td>
-                        <div class="form-floating mb-3">
+                        <div class="form-floating">
                             <input type="text" class="form-control" name="quantity_g" id="hop_quantity_g" placeholder="Quantity (g)">
                             <label for="hop_quantity_g">Quantity (g)</label>
                         </div>
