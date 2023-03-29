@@ -1,4 +1,5 @@
 venv/
+logs/
 db.sqlite3
 __pycache__
 brew-planner/secret.py
