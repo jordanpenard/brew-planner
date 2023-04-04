@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Ingredient, Grain, Hop, Yeast, Stock, Recipe, GrainRecipe, HopRecipe, Brew
 from django.contrib import messages
+from django.db.models import Sum
 
 
 def index(request):
@@ -81,6 +82,25 @@ def add_ingredients(request):
     return redirect("ingredients")
 
 
+def get_recipe_stock_check(current_recipe):
+    stock_checker = []
+
+    for grain_recipe in GrainRecipe.objects.filter(recipe=current_recipe.pk):
+        data = {"name": str(grain_recipe.grain),
+                "quantity_needed_g": grain_recipe.quantity_g,
+                "quantity_in_stock_g": Stock.objects.get(ingredient=grain_recipe.grain).quantity_g}
+        stock_checker.append(data)
+
+    for ret in HopRecipe.objects.filter(recipe=current_recipe.pk).values('hop').distinct().annotate(quantity_needed_g=Sum('quantity_g')):
+        hop = ret["hop"]
+        data = {"name": str(Hop.objects.get(pk=hop)),
+                "quantity_needed_g": ret["quantity_needed_g"],
+                "quantity_in_stock_g": Stock.objects.get(ingredient=hop).quantity_g}
+        stock_checker.append(data)
+
+    return stock_checker
+
+
 def recipe(request):
     context = {'recipes': Recipe.objects.all(),
                'grain_recipes': GrainRecipe.objects.all(),
@@ -135,11 +155,12 @@ def edit_recipe(request, pk):
         context = {'recipe': current_recipe,
                    'disabled_state': disabled_state,
                    'grain_recipes': GrainRecipe.objects.filter(recipe=pk),
-                   'hop_recipes': HopRecipe.objects.filter(recipe=pk),
+                   'hop_recipes': HopRecipe.objects.filter(recipe=pk).order_by('-time_min', 'dry_hop'),
                    'all_grain': Grain.objects.all(),
                    'all_hop': Hop.objects.all(),
                    'unused_grain': Grain.objects.all().exclude(pk__in=used_grains),
-                   'all_yeast': Yeast.objects.all()}
+                   'all_yeast': Yeast.objects.all(),
+                   'stock_checker': get_recipe_stock_check(current_recipe)}
         return render(request, 'edit_recipe.html', context)
 
 
@@ -285,7 +306,8 @@ def edit_brew(request, pk):
 
     context = {'brew': current_brew,
                'grain_recipes': GrainRecipe.objects.filter(recipe=current_brew.recipe.pk),
-               'hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk),
+               'boil_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=False).order_by('-time_min'),
+               'dry_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=True).order_by('-time_min'),
                'mash_volume_l': mash_volume_l,
                'target_pre_boil_volume_l': target_pre_boil_volume_l,
                'target_pre_boil_gravity': '{:.3f}'.format(target_pre_boil_gravity),
@@ -293,7 +315,8 @@ def edit_brew(request, pk):
                'sparge_strike_temperature_c': '{:.1f}'.format(sparge_strike_temperature_c),
                'estimated_volume_l': '{:.1f}'.format(estimated_volume_l),
                'estimated_og': '{:.3f}'.format(estimated_og),
-               'sparge_volume_l': sparge_volume_l}
+               'sparge_volume_l': sparge_volume_l,
+               'stock_checker': get_recipe_stock_check(current_brew.recipe)}
 
     return render(request, 'edit_brew.html', context)
 

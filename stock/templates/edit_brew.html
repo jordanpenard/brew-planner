@@ -116,8 +116,7 @@
             </form>
 
             {% with disabled_state="disabled" %}
-                {% include 'grain_bill.html' %}
-                {% include 'hop_bill.html' %}
+                {% include 'recipe_stock_checker.html' %}
             {% endwith %}
             <br><br>
         </div>
@@ -198,7 +197,7 @@
                 <br>
             {% endif %}
 
-            {% with disabled_state="disabled" %}
+            {% with disabled_state="disabled" hop_recipes=boil_hop_recipes %}
                 {% include 'hop_bill.html' %}
             {% endwith %}
             <br>
@@ -269,6 +268,9 @@
                 </a>
                 <br>
             {% endif %}
+            {% with disabled_state="disabled" hop_recipes=dry_hop_recipes %}
+                {% include 'hop_bill.html' %}
+            {% endwith %}
             <br>
             <form method="post" action="/brew/{{brew.pk}}/save_fermenting">
                 {% csrf_token %}
