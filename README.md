@@ -8,6 +8,7 @@ The following needs to be setup while deploying the container :
 Once a container is freshly deployed, there's a few things that needs setting up for the first time
 ```
 cd /var/www/html
+rm index.html
 git clone https://github.com/jordanpenard/brew-planner.git .
 ln -s /data/db.sqlite3 /var/www/html/db.sqlite3
 ln -s /data/secret.py /var/www/html/brew-planner/secret.py
