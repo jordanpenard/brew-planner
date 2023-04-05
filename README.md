@@ -22,14 +22,13 @@ chown -R www-data:www-data /var/www/html
 
 You will also need to change `CSRF_TRUSTED_ORIGINS` inside `brew-planner/settings.py` to match your public url in order to avoid a `CSRF verification failed` error.
 
-## Update
-In case of an update to a new version, only the following should be required, and a backup of the database is recommended
+## Updates
+When you want to update to a new version, only the following should be required, and a backup of the database is recommended
 ```
 cd /data
 cp db.sqlite3 db.sqlite3.bak
 cd /var/www/html
-git pull
-python3 manage.py migrate
-chown -R www-data:www-data /data
-chown -R www-data:www-data /var/www/html
+sudo -u www-data git pull
+sudo -u www-data python3 manage.py migrate
 ```
+Then restart your container.

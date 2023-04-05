@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED 1
 
 # Install stuff
 RUN apt-get update
-RUN apt-get install -y apache2 apache2-utils git
+RUN apt-get install -y apache2 apache2-utils git sudo
 RUN apt-get install -y libapache2-mod-wsgi-py3
 RUN pip3 install --upgrade pip
 COPY ./requirements.txt .
