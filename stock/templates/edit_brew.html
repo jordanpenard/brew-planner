@@ -30,7 +30,6 @@
     {% endwith %}
 </h3>
 <br>
-{% if user.is_authenticated %}
 
     <!-- Tabs -->
     <ul class="nav nav-tabs brew_menu" id="brewTab" role="tablist">
@@ -57,7 +56,7 @@
             {% endif %}
             " id="Prep" role="tabpanel" aria-labelledby="Prep-tab" tabindex="0">
             <br>
-            {% if brew.state == "Prep" %}
+            {% if brew.state == "Prep" and disabled_state != "disabled" %}
                 <a class="btn btn-success" href="/brew/{{brew.pk}}/next_state">
                     Move to Mash
                     <i class="fa-solid fa-arrow-right"></i>
@@ -81,6 +80,14 @@
             <br>
             <form method="post" action="/brew/{{brew.pk}}/save_prep">
                 {% csrf_token %}
+                <div class="row">
+                    <div class="col-12 col-lg-7">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="name" id="name" placeholder="Name" value="{{ brew.name }}" {{disabled_state}}>
+                            <label for="name">Name</label>
+                        </div>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-6 col-lg-2">
                         <div class="form-floating mb-3">
@@ -106,18 +113,20 @@
                             <label for="mash_thickness_lpkg">Mash thickness (L/kg)</label>
                         </div>
                     </div>
+                    {% if disabled_state != "disabled" %}
                     <div class="col-2 col-lg-1">
                         <button type="submit" class="btn btn-primary save_button">
                             <i class="fa-solid fa-floppy-disk"></i>
                             Save
                         </button>
                     </div>
+                    {% endif %}
                 </div>
             </form>
 
-            {% with disabled_state="disabled" %}
+            {% if user.is_authenticated %}
                 {% include 'recipe_stock_checker.html' %}
-            {% endwith %}
+            {% endif %}
             <br><br>
         </div>
 
@@ -128,7 +137,7 @@
             {% endif %}
             " id="Mash" role="tabpanel" aria-labelledby="Mash-tab" tabindex="0">
             <br>
-            {% if brew.state == "Mash" %}
+            {% if brew.state == "Mash" and disabled_state != "disabled" %}
                 <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
                     <i class="fa-solid fa-arrow-left"></i>
                     Move to Prep
@@ -152,6 +161,12 @@
             Sparge strike temperature : {{sparge_strike_temperature_c}}°C<br>
             Target mash out temperature : {{brew.mash_out_temp_c}}°C<br>
             <br>
+            {% if brew.measured_mash_ph < 5.2 or brew.measured_mash_ph > 5.6 %}
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+              <i class="fa-solid fa-triangle-exclamation"></i> &nbsp; Mash pH should be between 5.2 and 5.6
+            </div>
+            <br>
+            {% endif %}
             <form method="post" action="/brew/{{brew.pk}}/save_mash">
                 {% csrf_token %}
                 <div class="row">
@@ -167,12 +182,14 @@
                             <label for="measured_mash_ph">Mash pH</label>
                         </div>
                     </div>
+                    {% if disabled_state != "disabled" %}
                     <div class="col-2">
                         <button type="submit" class="btn btn-primary save_button">
                             <i class="fa-solid fa-floppy-disk"></i>
                             Save
                         </button>
                     </div>
+                    {% endif %}
                 </div>
             </form>
             <br><br>
@@ -185,7 +202,7 @@
             {% endif %}
             " id="Boil" role="tabpanel" aria-labelledby="Boil-tab" tabindex="0">
             <br>
-            {% if brew.state == "Boil" %}
+            {% if brew.state == "Boil" and disabled_state != "disabled" %}
                 <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
                     <i class="fa-solid fa-arrow-left"></i>
                     Move to Mash
@@ -239,12 +256,14 @@
                             <label for="measured_og">Original gravity</label>
                         </div>
                     </div>
+                    {% if disabled_state != "disabled" %}
                     <div class="col-2">
                         <button type="submit" class="btn btn-primary save_button">
                             <i class="fa-solid fa-floppy-disk"></i>
                             Save
                         </button>
                     </div>
+                    {% endif %}
                 </div>
             </form>
             <br><br>
@@ -257,7 +276,7 @@
             {% endif %}
             " id="Fermenting" role="tabpanel" aria-labelledby="Fermenting-tab" tabindex="0">
             <br>
-            {% if brew.state == "Fermenting" %}
+            {% if brew.state == "Fermenting" and disabled_state != "disabled" %}
                 <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
                     <i class="fa-solid fa-arrow-left"></i>
                     Move to Boil
@@ -281,12 +300,14 @@
                             <label for="brew_monitor_link">Brew monitor link</label>
                         </div>
                     </div>
+                    {% if disabled_state != "disabled" %}
                     <div class="col-2">
                         <button type="submit" class="btn btn-primary save_button">
                             <i class="fa-solid fa-floppy-disk"></i>
                             Save
                         </button>
                     </div>
+                    {% endif %}
                 </div>
             </form>
             <br><br>
@@ -299,7 +320,7 @@
             {% endif %}
             " id="Completed" role="tabpanel" aria-labelledby="Completed-tab" tabindex="0">
             <br>
-            {% if brew.state == "Completed" %}
+            {% if brew.state == "Completed" and disabled_state != "disabled" %}
                 <a class="btn btn-warning" href="/brew/{{brew.pk}}/previous_state">
                     <i class="fa-solid fa-arrow-left"></i>
                     Move to Fermenting
@@ -328,19 +349,18 @@
                             <label for="bottling_volume_l">Bottling volume (L)</label>
                         </div>
                     </div>
+                    {% if disabled_state != "disabled" %}
                     <div class="col-2">
                         <button type="submit" class="btn btn-primary save_button">
                             <i class="fa-solid fa-floppy-disk"></i>
                             Save
                         </button>
                     </div>
+                    {% endif %}
                 </div>
             </form>
             <br><br>
         </div>
     </div>
 
-{% else %}
-    <div class="alert alert-danger" role="alert">You need to be logged in</div>
-{% endif %}
 {% endblock content %}

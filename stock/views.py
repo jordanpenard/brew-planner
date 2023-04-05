@@ -82,20 +82,36 @@ def add_ingredients(request):
     return redirect("ingredients")
 
 
-def get_recipe_stock_check(current_recipe):
+def get_recipe_stock_check(request, current_recipe):
+    if not request.user.is_authenticated:
+        return []
+
     stock_checker = []
 
     for grain_recipe in GrainRecipe.objects.filter(recipe=current_recipe.pk):
+        quantity_in_stock_g = 0
+        try:
+            quantity_in_stock_g = Stock.objects.get(owner=request.user.username, ingredient=grain_recipe.grain).quantity_g
+        except:
+            pass
+
         data = {"name": str(grain_recipe.grain),
                 "quantity_needed_g": grain_recipe.quantity_g,
-                "quantity_in_stock_g": Stock.objects.get(ingredient=grain_recipe.grain).quantity_g}
+                "quantity_in_stock_g": quantity_in_stock_g}
         stock_checker.append(data)
 
     for ret in HopRecipe.objects.filter(recipe=current_recipe.pk).values('hop').distinct().annotate(quantity_needed_g=Sum('quantity_g')):
         hop = ret["hop"]
+
+        quantity_in_stock_g = 0
+        try:
+            quantity_in_stock_g = Stock.objects.get(owner=request.user.username, ingredient=hop).quantity_g
+        except:
+            pass
+
         data = {"name": str(Hop.objects.get(pk=hop)),
                 "quantity_needed_g": ret["quantity_needed_g"],
-                "quantity_in_stock_g": Stock.objects.get(ingredient=hop).quantity_g}
+                "quantity_in_stock_g": quantity_in_stock_g}
         stock_checker.append(data)
 
     return stock_checker
@@ -124,12 +140,11 @@ def add_recipe(request):
 
 
 def edit_recipe(request, pk):
-    if not request.user.is_authenticated:
-        return redirect("login")
-
     current_recipe = Recipe.objects.get(pk=pk)
 
     if request.method == "POST":
+        if not request.user.is_authenticated:
+            return redirect("login")
         if current_recipe.owner != request.user.username:
             messages.success(request, "You can't edit someone else's recipe")
             return redirect("edit_recipe", pk)
@@ -144,7 +159,7 @@ def edit_recipe(request, pk):
         return redirect("edit_recipe", pk)
 
     else:
-        if current_recipe.owner != request.user.username:
+        if not request.user.is_authenticated or current_recipe.owner != request.user.username:
             messages.success(request, "Read only as someone else owns this recipe")
             disabled_state = "disabled"
         else:
@@ -160,7 +175,7 @@ def edit_recipe(request, pk):
                    'all_hop': Hop.objects.all(),
                    'unused_grain': Grain.objects.all().exclude(pk__in=used_grains),
                    'all_yeast': Yeast.objects.all(),
-                   'stock_checker': get_recipe_stock_check(current_recipe)}
+                   'stock_checker': get_recipe_stock_check(request, current_recipe)}
         return render(request, 'edit_recipe.html', context)
 
 
@@ -266,6 +281,8 @@ def brew(request):
 
 
 def new_brew(request, recipe_pk):
+    if not request.user.is_authenticated:
+        return redirect("login")
 
     new_entry = Brew(recipe=Recipe.objects.get(pk=recipe_pk), owner=request.user.username)
     new_entry.save()
@@ -304,7 +321,14 @@ def edit_brew(request, pk):
         estimated_og = float(current_brew.recipe.stats()['og'])
         estimated_volume_l = current_brew.recipe.batch_size_l
 
+    if not request.user.is_authenticated or current_brew.owner != request.user.username:
+        messages.success(request, "Read only as someone else owns this brew")
+        disabled_state = "disabled"
+    else:
+        disabled_state = ""
+
     context = {'brew': current_brew,
+               'disabled_state': disabled_state,
                'grain_recipes': GrainRecipe.objects.filter(recipe=current_brew.recipe.pk),
                'boil_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=False).order_by('-time_min'),
                'dry_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=True).order_by('-time_min'),
@@ -316,7 +340,7 @@ def edit_brew(request, pk):
                'estimated_volume_l': '{:.1f}'.format(estimated_volume_l),
                'estimated_og': '{:.3f}'.format(estimated_og),
                'sparge_volume_l': sparge_volume_l,
-               'stock_checker': get_recipe_stock_check(current_brew.recipe)}
+               'stock_checker': get_recipe_stock_check(request, current_brew.recipe)}
 
     return render(request, 'edit_brew.html', context)
 
@@ -380,6 +404,7 @@ def save_prep(request, pk):
         messages.success(request, "You can't edit someone else's brew")
         return redirect("edit_brew", pk=pk)
 
+    current_brew.name = request.POST['name']
     current_brew.brew_date = request.POST['brew_date']
     current_brew.mash_thickness_lpkg = request.POST['mash_thickness_lpkg']
     current_brew.evaporation_lph = request.POST['evaporation_lph']

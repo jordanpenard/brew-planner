@@ -2,7 +2,7 @@
 {% block title %}{{ recipe.name }}{% endblock title %}
 {% block content %}
 
-{% if user.is_authenticated %}
+
     <script>
       function grain_recipe_edit(pk) {
          document.getElementById("grain_edit_"+pk).removeAttribute("hidden");
@@ -83,8 +83,7 @@
 
     {% include 'grain_bill.html' %}
     {% include 'hop_bill.html' %}
+{% if disabled_state != "disabled" %}
     {% include 'recipe_stock_checker.html' %}
-{% else %}
-    <div class="alert alert-danger" role="alert">You need to be logged in</div>
 {% endif %}
 {% endblock content %}

@@ -3,7 +3,6 @@
 {% block content %}
 
 <h1>Recipe</h1>
-{% if user.is_authenticated %}
     <table class="table">
         <thead><tr><th scope="col">Recipe</th><th scope="col">Owner</th></tr></thead>
         <tbody>
@@ -15,18 +14,22 @@
                         {% endwith %}
                     </td>
                     <td style="padding-top: 14px;">{{ recipe.owner }}</td>
-                    <td><a class="btn btn-primary" href="/recipe/{{recipe.pk}}/new_brew">Brew</a></td>
+                    <td>
+                        {% if user.is_authenticated %}
+                            <a class="btn btn-primary" href="/recipe/{{recipe.pk}}/new_brew">Brew</a>
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
+            {% if user.is_authenticated %}
             <tr><form method="post" action="/recipe/add">
                 {% csrf_token %}
                 <td><button type="submit" class="btn btn-primary">Create new recipe</button></td>
                 <td></td>
                 <td></td>
             </form></tr>
+            {% endif %}
         </tbody>
     </table>
-{% else %}
-    <div class="alert alert-danger" role="alert">You need to be logged in</div>
-{% endif %}
+
 {% endblock content %}
