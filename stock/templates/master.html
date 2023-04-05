@@ -59,6 +59,11 @@
           <li class="nav-item">
             <a class="nav-link" href="/stock">Stock</a>
           </li>
+          {% if user.is_staff %}
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">Admin</a>
+          </li>
+          {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="/user/logout">Logout</a>
           </li>
