@@ -11,8 +11,13 @@ def index(request):
 def stock(request):
     # Filtering the list of ingredients so the list to add a new entry in the stock only shows ingredients that aren't yet in the stock
     used_ingredients = Stock.objects.filter(owner=request.user.username).values_list("ingredient")
-    context = {'stock': Stock.objects.all(),
-               'unused_ingredients': Ingredient.objects.all().exclude(pk__in=used_ingredients)}
+
+    context = {'grain_stock': Stock.objects.filter(owner=request.user.username, ingredient__in=Grain.objects.all()),
+               'grain_unused_ingredients': Grain.objects.all().exclude(pk__in=used_ingredients),
+               'hop_stock': Stock.objects.filter(owner=request.user.username, ingredient__in=Hop.objects.all()),
+               'hop_unused_ingredients': Hop.objects.all().exclude(pk__in=used_ingredients),
+               'yeast_stock': Stock.objects.filter(owner=request.user.username, ingredient__in=Yeast.objects.all()),
+               'yeast_unused_ingredients': Yeast.objects.all().exclude(pk__in=used_ingredients)}
     return render(request, 'stock.html', context)
 
 

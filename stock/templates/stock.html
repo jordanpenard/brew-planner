@@ -13,34 +13,15 @@
 
 <h1>Stock</h1>
 {% if user.is_authenticated %}
-    <table class="table">
-        <thead><tr><th scope="col">Ingredient</th><th scope="col">Quantity (grams)</th><th scope="col"></th></tr></thead>
-        <tbody>
-            {% for entry in stock %}
-                {% if entry.owner == user.username %}
-                    <tr>
-                        <form id="stock_{{entry.pk}}" method="post" action="/stock/edit">
-                            {% csrf_token %}
-                            <input type="hidden" name="pk" value="{{entry.pk}}">
-                            <td>
-                                <label style="margin-top: 5px;">{{entry.ingredient}}</label>
-                            </td>
-                            <td>
-                                <label id="l_quantity_g_{{entry.pk}}" style="margin-top: 5px;">{{entry.quantity_g}}</label>
-                                <input hidden="hidden" type="text" class="form-control" id="quantity_g_{{entry.pk}}" name="quantity_g" value="{{entry.quantity_g}}">
-                            </td>
-                            <td>
-                                <button type="button" id="edit_{{entry.pk}}" onClick="stock_edit({{entry.pk}})" class="btn btn-primary">Edit</button>
-                                <button hidden="hidden" id="save_{{entry.pk}}" type="submit" class="btn btn-primary">Save</button>
-                            </td>
-                        </form>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-            {% include "add_stock_entry.html" %}
-        </tbody>
-    </table>
-<br>
+    {% with ingredient_type='Grain' stock=grain_stock unused_ingredients=grain_unused_ingredients  %}
+        {% include 'stock_entry.html' %}
+    {% endwith %}
+    {% with ingredient_type='Hop' stock=hop_stock unused_ingredients=hop_unused_ingredients  %}
+        {% include 'stock_entry.html' %}
+    {% endwith %}
+    {% with ingredient_type='Yeast' stock=yeast_stock unused_ingredients=yeast_unused_ingredients  %}
+        {% include 'stock_entry.html' %}
+    {% endwith %}
 {% else %}
     <div class="alert alert-danger" role="alert">You need to be logged in</div>
 {% endif %}
