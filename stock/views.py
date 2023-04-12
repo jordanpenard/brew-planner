@@ -315,8 +315,9 @@ def edit_brew(request, pk):
 
     mash_volume_l = current_brew.mash_thickness_lpkg * grain_mass_g/1000
     evaporation_l = current_brew.evaporation_lph * current_brew.recipe.boil_time_min/60
+    grain_absorption_l = grain_mass_g/1000
     target_pre_boil_volume_l = current_brew.recipe.batch_size_l + evaporation_l
-    sparge_volume_l = target_pre_boil_volume_l - mash_volume_l
+    sparge_volume_l = target_pre_boil_volume_l - (mash_volume_l - grain_absorption_l)
 
     target_pre_boil_gravity = 1 + (float(current_brew.recipe.stats()['og'])-1) * (current_brew.recipe.batch_size_l/target_pre_boil_volume_l)
 
