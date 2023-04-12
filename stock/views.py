@@ -348,14 +348,14 @@ def edit_brew(request, pk):
                'grain_recipes': GrainRecipe.objects.filter(recipe=current_brew.recipe.pk),
                'boil_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=False).order_by('-time_min'),
                'dry_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=True).order_by('-time_min'),
-               'mash_volume_l': mash_volume_l,
+               'mash_volume_l': '{:.1f}'.format(mash_volume_l),
                'target_pre_boil_volume_l': target_pre_boil_volume_l,
                'target_pre_boil_gravity': '{:.3f}'.format(target_pre_boil_gravity),
                'mash_strike_temperature_c': '{:.1f}'.format(mash_strike_temperature_c),
                'sparge_strike_temperature_c': '{:.1f}'.format(sparge_strike_temperature_c),
                'estimated_volume_l': '{:.1f}'.format(estimated_volume_l),
                'estimated_og': '{:.3f}'.format(estimated_og),
-               'sparge_volume_l': sparge_volume_l,
+               'sparge_volume_l': '{:.1f}'.format(sparge_volume_l),
                'stock_checker': get_recipe_stock_check(request, current_brew.recipe)}
 
     return render(request, 'edit_brew.html', context)
