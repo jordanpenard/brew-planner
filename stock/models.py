@@ -113,6 +113,7 @@ class Brew(models.Model):
     owner = models.CharField(max_length=200)
     recipe = models.ForeignKey(Recipe, on_delete=models.DO_NOTHING)
     state = models.CharField(max_length=20, choices=BrewState.choices, default=BrewState.PREP)
+    ingredients_consumed = models.BooleanField(default=False)
 
     brew_date = models.DateField(null=True, blank=True)
     bottling_date = models.DateField(null=True, blank=True)

@@ -122,6 +122,15 @@ def get_recipe_stock_check(request, current_recipe):
     return stock_checker
 
 
+def is_everything_in_stock(request, current_recipe):
+    status = True
+    for item in get_recipe_stock_check(request, current_recipe):
+        if item["quantity_needed_g"] > item["quantity_in_stock_g"]:
+            status = False
+
+    return status
+
+
 def recipe(request):
     context = {'recipes': Recipe.objects.all(),
                'grain_recipes': GrainRecipe.objects.all(),
@@ -334,6 +343,7 @@ def edit_brew(request, pk):
 
     context = {'brew': current_brew,
                'disabled_state': disabled_state,
+               'is_everything_in_stock': is_everything_in_stock(request, current_brew),
                'grain_recipes': GrainRecipe.objects.filter(recipe=current_brew.recipe.pk),
                'boil_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=False).order_by('-time_min'),
                'dry_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=True).order_by('-time_min'),
@@ -488,6 +498,36 @@ def save_completed(request, pk):
     current_brew.bottling_date = request.POST['bottling_date']
     current_brew.measured_fg = request.POST['measured_fg']
     current_brew.bottling_volume_l = request.POST['bottling_volume_l']
+    current_brew.save()
+
+    return redirect("edit_brew", pk=pk)
+
+
+def consume_ingredients(request, pk):
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    current_brew = Brew.objects.get(pk=pk)
+
+    if current_brew.owner != request.user.username:
+        messages.success(request, "You can't edit someone else's brew")
+        return redirect("edit_brew", pk=pk)
+
+    grains = GrainRecipe.objects.filter(recipe=current_brew.recipe)
+    hops = HopRecipe.objects.filter(recipe=current_brew.recipe)
+
+    for ingredient in grains:
+        stock_entry = Stock.objects.get(owner=request.user.username, ingredient=ingredient.grain)
+        stock_entry.quantity_g -= ingredient.quantity_g
+        stock_entry.save()
+
+    for ingredient in hops:
+        stock_entry = Stock.objects.get(owner=request.user.username, ingredient=ingredient.hop)
+        stock_entry.quantity_g -= ingredient.quantity_g
+        stock_entry.save()
+
+    current_brew.ingredients_consumed = True
     current_brew.save()
 
     return redirect("edit_brew", pk=pk)

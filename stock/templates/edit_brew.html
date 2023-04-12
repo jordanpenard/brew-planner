@@ -126,6 +126,14 @@
 
             {% if user.is_authenticated %}
                 {% include 'recipe_stock_checker.html' %}
+                {% if is_everything_in_stock == True and brew.ingredients_consumed == False %}
+                    <a class="btn btn-primary" href="/brew/{{brew.pk}}/consume_ingredients">Consume ingredients</a>
+                {% endif %}
+                {% if brew.ingredients_consumed == True %}
+                    All ingredients already consumed<br>
+                {% elif is_everything_in_stock == False %}
+                    Not all the ingredients are in stock<br>
+                {% endif %}
             {% endif %}
             <br><br>
         </div>
@@ -310,6 +318,9 @@
                     {% endif %}
                 </div>
             </form>
+            {% if brew.brew_monitor_link != "" %}
+                <a class="btn btn-primary" href="{{brew.brew_monitor_link}}" target="_blank"><i class="fa-solid fa-up-right-from-square"></i> Go to brew-monitor</a>
+            {% endif %}
             <br><br>
         </div>
 
@@ -359,6 +370,9 @@
                     {% endif %}
                 </div>
             </form>
+            {% if brew.brew_monitor_link != "" %}
+                <a class="btn btn-primary" href="{{brew.brew_monitor_link}}" target="_blank"><i class="fa-solid fa-up-right-from-square"></i> Go to brew-monitor</a>
+            {% endif %}
             <br><br>
         </div>
     </div>

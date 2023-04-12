@@ -25,4 +25,5 @@ urlpatterns = [
     path('brew/<int:pk>/save_boil', views.save_boil, name="save_boil"),
     path('brew/<int:pk>/save_fermenting', views.save_fermenting, name="save_fermenting"),
     path('brew/<int:pk>/save_completed', views.save_completed, name="save_completed"),
+    path('brew/<int:pk>/consume_ingredients', views.consume_ingredients, name="consume_ingredients"),
 ]
