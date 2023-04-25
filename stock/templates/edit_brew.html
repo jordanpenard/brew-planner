@@ -169,6 +169,10 @@
             Sparge strike temperature : {{sparge_strike_temperature_c}}°C<br>
             Target mash out temperature : {{brew.mash_out_temp_c}}°C<br>
             <br>
+            Target pre sparge volume : {{target_pre_sparge_volume_l}}L<br>
+            Target pre boil volume : {{target_pre_boil_volume_l}}L<br>
+            Target pre boil gravity : {{target_pre_boil_gravity}}<br>
+            <br>
             {% if brew.measured_mash_ph < 5.2 or brew.measured_mash_ph > 5.6 %}
             <div class="alert alert-warning d-flex align-items-center" role="alert">
               <i class="fa-solid fa-triangle-exclamation"></i> &nbsp; Mash pH should be between 5.2 and 5.6

@@ -317,7 +317,8 @@ def edit_brew(request, pk):
     evaporation_l = current_brew.evaporation_lph * current_brew.recipe.boil_time_min/60
     grain_absorption_l = grain_mass_g/1000
     target_pre_boil_volume_l = current_brew.recipe.batch_size_l + evaporation_l
-    sparge_volume_l = target_pre_boil_volume_l - (mash_volume_l - grain_absorption_l)
+    target_pre_sparge_volume_l = mash_volume_l - grain_absorption_l
+    sparge_volume_l = target_pre_boil_volume_l - target_pre_sparge_volume_l
 
     target_pre_boil_gravity = 1 + (float(current_brew.recipe.stats()['og'])-1) * (current_brew.recipe.batch_size_l/target_pre_boil_volume_l)
 
@@ -349,6 +350,7 @@ def edit_brew(request, pk):
                'boil_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=False).order_by('-time_min'),
                'dry_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=True).order_by('-time_min'),
                'mash_volume_l': '{:.1f}'.format(mash_volume_l),
+               'target_pre_sparge_volume_l': target_pre_sparge_volume_l,
                'target_pre_boil_volume_l': target_pre_boil_volume_l,
                'target_pre_boil_gravity': '{:.3f}'.format(target_pre_boil_gravity),
                'mash_strike_temperature_c': '{:.1f}'.format(mash_strike_temperature_c),
