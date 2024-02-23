@@ -5,7 +5,7 @@ The following needs to be setup while deploying the container :
 - Port mapping for `TCP:80`
 
 ```
-docker build .
+docker build -t brew-planner .
 docker run -dit --name brew-planner --mount type=bind,source=`pwd`,target=/var/www/html -p 8000:80 --restart=always brew-planner
 ```
 
