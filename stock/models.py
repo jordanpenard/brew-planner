@@ -134,7 +134,7 @@ class Brew(models.Model):
     brew_monitor_link = models.CharField(max_length=1000, default="", blank=True)
 
     def __str__(self):
-        return self.name + " - " + self.recipe.name + " - " + self.state
+        return self.name + " - " + self.recipe.name
 
     def stats(self):
 
@@ -147,11 +147,24 @@ class Brew(models.Model):
         color_l = color_l_from_grain_bill(grain_bill)
         ibu = ibu_from_hop_bill(HopRecipe.objects.filter(recipe=self.recipe.pk), self.recipe.batch_size_l, og)
 
+        state = "fa-question"
+        if self.state == self.BrewState.PREP:
+            state = "fa-list-check"
+        elif self.state == self.BrewState.MASH:
+            state = "fa-wheat-awn"
+        elif self.state == self.BrewState.BOIL:
+            state = "fa-fire-burner"
+        elif self.state == self.BrewState.FERMENTING:
+            state = "fa-flask"
+        elif self.state == self.BrewState.COMPLETED:
+            state = "fa-check"
+
         ret = {'og': '{:.3f}'.format(og),
                'fg': '{:.3f}'.format(fg),
                'abv': '{:.1f}'.format(abv),
                'diastatic_power': '{:.0f}'.format(diastatic_power),
                'color_l': '{:.1f}'.format(color_l),
                'color_rgb': lovibond_to_rgb(color_l),
-               'ibu': '{:.1f}'.format(ibu)}
+               'ibu': '{:.1f}'.format(ibu),
+               'state': state}
         return ret
