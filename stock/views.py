@@ -345,7 +345,7 @@ def edit_brew(request, pk):
 
     context = {'brew': current_brew,
                'disabled_state': disabled_state,
-               'is_everything_in_stock': is_everything_in_stock(request, current_brew),
+               'is_everything_in_stock': is_everything_in_stock(request, current_brew.recipe),
                'grain_recipes': GrainRecipe.objects.filter(recipe=current_brew.recipe.pk),
                'boil_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=False).order_by('-time_min'),
                'dry_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=True).order_by('-time_min'),
