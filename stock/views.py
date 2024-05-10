@@ -179,11 +179,15 @@ def edit_recipe(request, pk):
         else:
             disabled_state = ""
 
-        used_grains = GrainRecipe.objects.filter(recipe=current_recipe).values_list("grain")
+        used_grains = GrainRecipe.objects.filter(recipe=pk).values_list("grain")
+
+        grain_recipes = GrainRecipe.objects.filter(recipe=pk)
+        total_grain_bill_g = sum([recipe.quantity_g for recipe in grain_recipes])
 
         context = {'recipe': current_recipe,
                    'disabled_state': disabled_state,
-                   'grain_recipes': GrainRecipe.objects.filter(recipe=pk),
+                   'grain_recipes': grain_recipes,
+                   'total_grain_bill_g': total_grain_bill_g,
                    'hop_recipes': HopRecipe.objects.filter(recipe=pk).order_by('-time_min', 'dry_hop'),
                    'all_grain': Grain.objects.all(),
                    'all_hop': Hop.objects.all(),
@@ -254,9 +258,13 @@ def edit_grain(request, pk):
     if request.method != "POST":
         return redirect("recipe")
 
-    current_recipe.grain = Grain.objects.get(pk=request.POST['grain'])
-    current_recipe.quantity_g = request.POST['quantity_g']
-    current_recipe.save()
+    if request.POST['quantity_g'] == "0":
+        current_recipe.delete()
+    else:
+        current_recipe.grain = Grain.objects.get(pk=request.POST['grain'])
+        current_recipe.quantity_g = request.POST['quantity_g']
+        current_recipe.save()
+
     return redirect("edit_recipe", pk=current_recipe.recipe.pk)
 
 
@@ -272,17 +280,20 @@ def edit_hop(request, pk):
     if request.method != "POST":
         return redirect("recipe")
 
-    current_recipe.hop = Hop.objects.get(pk=request.POST['hop'])
-    current_recipe.quantity_g = request.POST['quantity_g']
-    current_recipe.time_min = request.POST['time_min']
-
-    if request.POST.get('dry_hop', False):
-        current_recipe.dry_hop = True
-        current_recipe.time_min = 0
+    if request.POST['quantity_g'] == "0":
+        current_recipe.delete()
     else:
-        current_recipe.dry_hop = False
+        current_recipe.hop = Hop.objects.get(pk=request.POST['hop'])
+        current_recipe.quantity_g = request.POST['quantity_g']
+        current_recipe.time_min = request.POST['time_min']
 
-    current_recipe.save()
+        if request.POST.get('dry_hop', False):
+            current_recipe.dry_hop = True
+            current_recipe.time_min = 0
+        else:
+            current_recipe.dry_hop = False
+
+        current_recipe.save()
 
     return redirect("edit_recipe", pk=current_recipe.recipe.pk)
 
@@ -343,15 +354,19 @@ def edit_brew(request, pk):
     else:
         disabled_state = ""
 
+    grain_recipes = GrainRecipe.objects.filter(recipe=current_brew.recipe.pk)
+    total_grain_bill_g = sum([recipe.quantity_g for recipe in grain_recipes])
+
     context = {'brew': current_brew,
                'disabled_state': disabled_state,
                'is_everything_in_stock': is_everything_in_stock(request, current_brew.recipe),
-               'grain_recipes': GrainRecipe.objects.filter(recipe=current_brew.recipe.pk),
+               'grain_recipes': grain_recipes,
+               'total_grain_bill_g': total_grain_bill_g,
                'boil_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=False).order_by('-time_min'),
                'dry_hop_recipes': HopRecipe.objects.filter(recipe=current_brew.recipe.pk, dry_hop=True).order_by('-time_min'),
                'mash_volume_l': '{:.1f}'.format(mash_volume_l),
-               'target_pre_sparge_volume_l': target_pre_sparge_volume_l,
-               'target_pre_boil_volume_l': target_pre_boil_volume_l,
+               'target_pre_sparge_volume_l': '{:.1f}'.format(target_pre_sparge_volume_l),
+               'target_pre_boil_volume_l': '{:.1f}'.format(target_pre_boil_volume_l),
                'target_pre_boil_gravity': '{:.3f}'.format(target_pre_boil_gravity),
                'mash_strike_temperature_c': '{:.1f}'.format(mash_strike_temperature_c),
                'sparge_strike_temperature_c': '{:.1f}'.format(sparge_strike_temperature_c),

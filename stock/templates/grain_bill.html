@@ -1,3 +1,4 @@
+{% load django_template_maths %}
 <br>
 <h2>Grain bill</h2>
 <table class="table" id="grain_recipe">
@@ -5,7 +6,7 @@
         {% for grain_recipe in grain_recipes %}
             <tr id="grain_recipe_{{grain_recipe.pk}}">
                 <td><label style="margin-top: 5px;">{{ grain_recipe.grain }}</label></td>
-                <td><label style="margin-top: 5px;">{{ grain_recipe.quantity_g }}g</label></td>
+                <td><label style="margin-top: 5px;">{{ grain_recipe.quantity_g }}g ({{ grain_recipe.quantity_g | mul:100 | div:total_grain_bill_g | floatformat:1 }}%)</label></td>
                 <td>
                     {% if disabled_state != "disabled" %}
                         <button type="button" onclick="grain_recipe_edit({{grain_recipe.pk}})" class="btn btn-primary">Edit</button>
